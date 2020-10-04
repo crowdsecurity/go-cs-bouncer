@@ -31,14 +31,19 @@ $ cat main.go
 ```go
 package main
 
-import "github.com/crowdsecurity/go-cs-bouncer"
+import (
+	"fmt"
+	"log"
+
+	csbouncer "github.com/crowdsecurity/go-cs-bouncer"
+)
 
 func main() {
 
-	bouncer := &StreamBouncer{
-		APIKey:         "ebd4db481d51525fd0df924a69193921",
+	bouncer := &csbouncer.StreamBouncer{
+		APIKey:         "<API_TOKEN>",
 		APIUrl:         "http://localhost:8080/",
-		TickerInterval: "2m",
+		TickerInterval: "20s",
 	}
 
 	if err := bouncer.Init(); err != nil {
@@ -75,14 +80,18 @@ $ cat main.go
 ```go
 package main
 
-import "github.com/crowdsecurity/go-cs-bouncer"
+import (
+	"fmt"
+	"log"
+
+	csbouncer "github.com/crowdsecurity/go-cs-bouncer"
+)
 
 func main() {
 
-	bouncer := &LiveBouncer{
-		APIKey:         "ebd4db481d51525fd0df924a69193921",
-		APIUrl:         "http://localhost:8080/",
-		TickerInterval: "2m",
+	bouncer := &csbouncer.LiveBouncer{
+		APIKey: "<API_TOKEN>",
+		APIUrl: "http://localhost:8080/",
 	}
 
 	if err := bouncer.Init(); err != nil {
@@ -94,14 +103,15 @@ func main() {
 	if err != nil {
 		log.Fatalf("unable to get decision for ip '%s' : '%s'", ipToQuery, err)
 	}
-	if len(response) == 0 {
+	if len(*response) == 0 {
 		log.Printf("no decision for '%s'", ipToQuery)
 	}
 
-	for _, decision := response {
+	for _, decision := range *response {
 		fmt.Printf("decisions: IP: %s | Scenario: %s | Duration: %s | Scope : %v\n", *decision.Value, *decision.Scenario, *decision.Duration, *decision.Scope)
 	}
 }
+
 ```
 
 ```sh

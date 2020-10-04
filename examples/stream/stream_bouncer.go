@@ -3,14 +3,16 @@ package main
 import (
 	"fmt"
 	"log"
+
+	csbouncer "github.com/crowdsecurity/go-cs-bouncer"
 )
 
 func main() {
 
-	bouncer := &StreamBouncer{
+	bouncer := &csbouncer.StreamBouncer{
 		APIKey:         "ebd4db481d51525fd0df924a69193921",
 		APIUrl:         "http://localhost:8080/",
-		TickerInterval: "2m",
+		TickerInterval: "20s",
 	}
 
 	if err := bouncer.Init(); err != nil {
