@@ -1,6 +1,6 @@
 # Go CrowdSec Bouncer
 
-`go-cs-bouncer` is a golang library for communicating with CrowdSec API.
+`go-cs-bouncer` is a golang easy library to use to create golang CrowdSec bouncer.
 
 ## Installation
 
