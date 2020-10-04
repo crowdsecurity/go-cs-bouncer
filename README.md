@@ -20,6 +20,8 @@ import "github.com/crowdsecurity/go-cs-bouncer"
 
 ## Quick Start
 
+
+### Streaming Bouncer
  
 ```sh
 # assume the following codes in main.go file
@@ -33,7 +35,7 @@ import "github.com/crowdsecurity/go-cs-bouncer"
 
 func main() {
 
-	bouncer := &Bouncer{
+	bouncer := &StreamBouncer{
 		APIKey:         "ebd4db481d51525fd0df924a69193921",
 		APIUrl:         "http://localhost:8080/",
 		TickerInterval: "2m",
@@ -54,6 +56,50 @@ func main() {
 			// do some stuff with expired decisions
 			fmt.Printf("old decisions: IP: %s | Scenario: %s | Duration: %s | Scope : %v\n", *decision.Value, *decision.Scenario, *decision.Duration, *decision.Scope)
 		}
+	}
+}
+```
+
+```sh
+# run main.go
+$ go run main.go
+```
+
+### Live Bouncer
+ 
+```sh
+# assume the following codes in main.go file
+$ cat main.go
+```
+
+```go
+package main
+
+import "github.com/crowdsecurity/go-cs-bouncer"
+
+func main() {
+
+	bouncer := &LiveBouncer{
+		APIKey:         "ebd4db481d51525fd0df924a69193921",
+		APIUrl:         "http://localhost:8080/",
+		TickerInterval: "2m",
+	}
+
+	if err := bouncer.Init(); err != nil {
+		log.Fatalf(err.Error())
+	}
+
+	ipToQuery := "1.2.3.4"
+	response, err := bouncer.Get(ipToQuery)
+	if err != nil {
+		log.Fatalf("unable to get decision for ip '%s' : '%s'", ipToQuery, err)
+	}
+	if len(response) == 0 {
+		log.Printf("no decision for '%s'", ipToQuery)
+	}
+
+	for _, decision := response {
+		fmt.Printf("decisions: IP: %s | Scenario: %s | Duration: %s | Scope : %v\n", *decision.Value, *decision.Scenario, *decision.Duration, *decision.Scope)
 	}
 }
 ```

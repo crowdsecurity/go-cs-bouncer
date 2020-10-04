@@ -1,4 +1,4 @@
-package main
+package csbouncer
 
 import (
 	"context"
@@ -14,7 +14,7 @@ import (
 
 var pullTicker = 30
 
-type Bouncer struct {
+type StreamBouncer struct {
 	APIKey                 string
 	APIUrl                 string
 	TickerInterval         string
@@ -24,7 +24,7 @@ type Bouncer struct {
 	APIClient              *apiclient.ApiClient
 }
 
-func (b *Bouncer) Init() error {
+func (b *StreamBouncer) Init() error {
 	var err error
 
 	b.NewDecision = make(chan models.Decision)
@@ -48,7 +48,7 @@ func (b *Bouncer) Init() error {
 	return nil
 }
 
-func (b *Bouncer) Run() {
+func (b *StreamBouncer) Run() {
 	ticker := time.NewTicker(b.TickerIntervalDuration)
 
 	data, _, err := b.APIClient.Decisions.GetStream(context.Background(), true)
@@ -71,7 +71,7 @@ func (b *Bouncer) Run() {
 
 }
 
-func (b *Bouncer) Send(decisions *models.DecisionsStreamResponse) {
+func (b *StreamBouncer) Send(decisions *models.DecisionsStreamResponse) {
 	var wg sync.WaitGroup
 
 	wg.Add(1)
