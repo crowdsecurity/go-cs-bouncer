@@ -10,8 +10,6 @@ import (
 	"github.com/pkg/errors"
 )
 
-var pullTicker = 30
-
 type LiveBouncer struct {
 	APIKey    string
 	APIUrl    string

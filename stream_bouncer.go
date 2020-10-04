@@ -12,8 +12,6 @@ import (
 	"github.com/pkg/errors"
 )
 
-var pullTicker = 30
-
 type StreamBouncer struct {
 	APIKey                 string
 	APIUrl                 string
