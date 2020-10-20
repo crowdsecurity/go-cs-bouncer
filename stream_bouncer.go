@@ -20,6 +20,7 @@ type StreamBouncer struct {
 	ExpiredDecision        chan models.Decision
 	NewDecision            chan models.Decision
 	APIClient              *apiclient.ApiClient
+	UserAgent              string
 }
 
 func (b *StreamBouncer) Init() error {
@@ -32,6 +33,7 @@ func (b *StreamBouncer) Init() error {
 	if err != nil {
 		return errors.Wrapf(err, "local API Url '%s'", b.APIUrl)
 	}
+	apiclient.UserAgent = b.UserAgent
 	t := &apiclient.APIKeyTransport{
 		APIKey: b.APIKey,
 	}

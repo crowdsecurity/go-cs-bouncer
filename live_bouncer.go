@@ -14,6 +14,7 @@ type LiveBouncer struct {
 	APIKey    string
 	APIUrl    string
 	APIClient *apiclient.ApiClient
+	UserAgent string
 }
 
 func (b *LiveBouncer) Init() error {
@@ -23,6 +24,7 @@ func (b *LiveBouncer) Init() error {
 	if err != nil {
 		return errors.Wrapf(err, "local API Url '%s'", b.APIUrl)
 	}
+	apiclient.UserAgent = b.UserAgent
 	t := &apiclient.APIKeyTransport{
 		APIKey: b.APIKey,
 	}
