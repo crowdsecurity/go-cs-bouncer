@@ -4,7 +4,6 @@ import (
 	"context"
 	"log"
 	"net/url"
-	"sync"
 	"time"
 
 	"github.com/crowdsecurity/crowdsec/pkg/apiclient"
@@ -17,8 +16,7 @@ type StreamBouncer struct {
 	APIUrl                 string
 	TickerInterval         string
 	TickerIntervalDuration time.Duration
-	ExpiredDecision        chan models.Decision
-	NewDecision            chan models.Decision
+	Decisions              chan *models.DecisionsStreamResponse
 	APIClient              *apiclient.ApiClient
 	UserAgent              string
 }
@@ -51,12 +49,12 @@ func (b *StreamBouncer) Init() error {
 func (b *StreamBouncer) Run() {
 	ticker := time.NewTicker(b.TickerIntervalDuration)
 
-	data, _, err := b.APIClient.Decisions.GetStream(context.Background(), true)
+	data, _, err := b.APIClient.Decisions.GetStream(context.Background(), true) // true means we just started the bouncer
 	if err != nil {
 		log.Fatalf(err.Error())
 	}
 
-	b.Send(data)
+	b.Decisions <- data
 
 	for {
 		select {
@@ -65,30 +63,7 @@ func (b *StreamBouncer) Run() {
 			if err != nil {
 				log.Fatalf(err.Error())
 			}
-			b.Send(data)
+			b.Decisions <- data
 		}
 	}
-
-}
-
-func (b *StreamBouncer) Send(decisions *models.DecisionsStreamResponse) {
-	var wg sync.WaitGroup
-
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		for _, newDecision := range decisions.New {
-			b.NewDecision <- *newDecision
-		}
-	}()
-
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		for _, expiredDecision := range decisions.Deleted {
-			b.ExpiredDecision <- *expiredDecision
-		}
-	}()
-
-	wg.Wait()
 }
