@@ -24,8 +24,7 @@ type StreamBouncer struct {
 func (b *StreamBouncer) Init() error {
 	var err error
 
-	b.NewDecision = make(chan models.Decision)
-	b.ExpiredDecision = make(chan models.Decision)
+	b.Stream = make(chan *models.DecisionsStreamResponse)
 
 	apiclient.BaseURL, err = url.Parse(b.APIUrl)
 	if err != nil {
