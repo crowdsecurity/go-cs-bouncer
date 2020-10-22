@@ -52,14 +52,12 @@ func main() {
 
 	go bouncer.Run()
 
-	for {
-		select {
-		case decision := <-bouncer.NewDecision:
-			// Do some stuff with new decisions
+	for streamDecision := range bouncer.Decisions {
+		for _, decision := range streamDecision.Deleted {
+			fmt.Printf("expired decisions: IP: %s | Scenario: %s | Duration: %s | Scope : %v\n", *decision.Value, *decision.Scenario, *decision.Duration, *decision.Scope)
+		}
+		for _, decision := range streamDecision.New {
 			fmt.Printf("new decisions: IP: %s | Scenario: %s | Duration: %s | Scope : %v\n", *decision.Value, *decision.Scenario, *decision.Duration, *decision.Scope)
-		case decision := <-bouncer.ExpiredDecision:
-			// do some stuff with expired decisions
-			fmt.Printf("old decisions: IP: %s | Scenario: %s | Duration: %s | Scope : %v\n", *decision.Value, *decision.Scenario, *decision.Duration, *decision.Scope)
 		}
 	}
 }
