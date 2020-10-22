@@ -16,7 +16,7 @@ type StreamBouncer struct {
 	APIUrl                 string
 	TickerInterval         string
 	TickerIntervalDuration time.Duration
-	Decisions              chan *models.DecisionsStreamResponse
+	Stream                 chan *models.DecisionsStreamResponse
 	APIClient              *apiclient.ApiClient
 	UserAgent              string
 }
@@ -54,7 +54,7 @@ func (b *StreamBouncer) Run() {
 		log.Fatalf(err.Error())
 	}
 
-	b.Decisions <- data
+	b.Stream <- data
 
 	for {
 		select {
@@ -63,7 +63,7 @@ func (b *StreamBouncer) Run() {
 			if err != nil {
 				log.Fatalf(err.Error())
 			}
-			b.Decisions <- data
+			b.Stream <- data
 		}
 	}
 }

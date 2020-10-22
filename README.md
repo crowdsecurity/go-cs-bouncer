@@ -52,7 +52,7 @@ func main() {
 
 	go bouncer.Run()
 
-	for streamDecision := range bouncer.Decisions {
+	for streamDecision := range bouncer.Stream {
 		for _, decision := range streamDecision.Deleted {
 			fmt.Printf("expired decisions: IP: %s | Scenario: %s | Duration: %s | Scope : %v\n", *decision.Value, *decision.Scenario, *decision.Duration, *decision.Scope)
 		}
