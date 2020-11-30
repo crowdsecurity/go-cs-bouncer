@@ -23,19 +23,22 @@ type StreamBouncer struct {
 
 func (b *StreamBouncer) Init() error {
 	var err error
+	var apiURL *url.URL
 
 	b.Stream = make(chan *models.DecisionsStreamResponse)
 
-	apiclient.BaseURL, err = url.Parse(b.APIUrl)
+	apiURL, err = url.Parse(b.APIUrl)
 	if err != nil {
 		return errors.Wrapf(err, "local API Url '%s'", b.APIUrl)
 	}
-	apiclient.UserAgent = b.UserAgent
 	t := &apiclient.APIKeyTransport{
 		APIKey: b.APIKey,
 	}
 
-	b.APIClient = apiclient.NewClient(t.Client())
+	b.APIClient, err = apiclient.NewDefaultClient(apiURL, "v1", b.UserAgent, t.Client())
+	if err != nil {
+		return errors.Wrapf(err, "api client init")
+	}
 
 	b.TickerIntervalDuration, err = time.ParseDuration(b.TickerInterval)
 	if err != nil {

@@ -19,24 +19,25 @@ type LiveBouncer struct {
 
 func (b *LiveBouncer) Init() error {
 	var err error
-
-	apiclient.BaseURL, err = url.Parse(b.APIUrl)
+	var apiURL *url.URL
+	apiURL, err = url.Parse(b.APIUrl)
 	if err != nil {
 		return errors.Wrapf(err, "local API Url '%s'", b.APIUrl)
 	}
-	apiclient.UserAgent = b.UserAgent
 	t := &apiclient.APIKeyTransport{
 		APIKey: b.APIKey,
 	}
 
-	b.APIClient = apiclient.NewClient(t.Client())
-
+	b.APIClient, err = apiclient.NewDefaultClient(apiURL, "v1", b.UserAgent, t.Client())
+	if err != nil {
+		return errors.Wrapf(err, "api client init")
+	}
 	return nil
 }
 
 func (b *LiveBouncer) Get(value string) (*models.GetDecisionsResponse, error) {
 	filter := apiclient.DecisionsListOpts{
-		IP_equals: &value,
+		IPEquals: &value,
 	}
 
 	decision, _, err := b.APIClient.Decisions.List(context.Background(), filter)
