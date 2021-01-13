@@ -63,7 +63,7 @@ func (b *StreamBouncer) Run() {
 		case <-ticker.C:
 			data, _, err := b.APIClient.Decisions.GetStream(context.Background(), false)
 			if err != nil {
-				log.Fatalf(err.Error())
+				log.Errorf(err.Error())
 			}
 			b.Stream <- data
 		}
