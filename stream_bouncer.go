@@ -65,6 +65,7 @@ func (b *StreamBouncer) Run() {
 			data, _, err := b.APIClient.Decisions.GetStream(context.Background(), false)
 			if err != nil {
 				log.Errorf(err.Error())
+				continue
 			}
 			b.Stream <- data
 		}
