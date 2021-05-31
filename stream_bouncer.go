@@ -20,6 +20,7 @@ type StreamBouncer struct {
 	Stream                 chan *models.DecisionsStreamResponse
 	APIClient              *apiclient.ApiClient
 	UserAgent              string
+	Scopes                 []string
 }
 
 func (b *StreamBouncer) Init() error {
@@ -52,7 +53,7 @@ func (b *StreamBouncer) Init() error {
 func (b *StreamBouncer) Run() {
 	ticker := time.NewTicker(b.TickerIntervalDuration)
 
-	data, _, err := b.APIClient.Decisions.GetStream(context.Background(), true) // true means we just started the bouncer
+	data, _, err := b.APIClient.Decisions.GetStream(context.Background(), true, b.Scopes) // true means we just started the bouncer
 	if err != nil {
 		log.Fatalf(err.Error())
 	}
@@ -62,7 +63,7 @@ func (b *StreamBouncer) Run() {
 	for {
 		select {
 		case <-ticker.C:
-			data, _, err := b.APIClient.Decisions.GetStream(context.Background(), false)
+			data, _, err := b.APIClient.Decisions.GetStream(context.Background(), false, b.Scopes)
 			if err != nil {
 				log.Errorf(err.Error())
 				continue
