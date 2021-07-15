@@ -1,4 +1,4 @@
-module go-cs-bouncer
+module github.com/crowdsecurity/go-cs-bouncer
 
 go 1.15
 
