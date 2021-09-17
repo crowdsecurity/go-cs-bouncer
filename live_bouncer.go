@@ -40,9 +40,15 @@ func (b *LiveBouncer) Get(value string) (*models.GetDecisionsResponse, error) {
 		IPEquals: &value,
 	}
 
-	decision, _, err := b.APIClient.Decisions.List(context.Background(), filter)
+	decision, resp, err := b.APIClient.Decisions.List(context.Background(), filter)
 	if err != nil {
+		if resp != nil && resp.Response != nil {
+			resp.Response.Body.Close()
+		}
 		return &models.GetDecisionsResponse{}, err
+	}
+	if resp != nil && resp.Response != nil {
+		resp.Response.Body.Close()
 	}
 
 	return decision, nil

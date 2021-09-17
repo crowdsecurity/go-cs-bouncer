@@ -63,10 +63,16 @@ func (b *StreamBouncer) Run() {
 	for {
 		select {
 		case <-ticker.C:
-			data, _, err := b.APIClient.Decisions.GetStream(context.Background(), false, b.Scopes)
+			data, resp, err := b.APIClient.Decisions.GetStream(context.Background(), false, b.Scopes)
 			if err != nil {
+				if resp != nil && resp.Response != nil {
+					resp.Response.Body.Close()
+				}
 				log.Errorf(err.Error())
 				continue
+			}
+			if resp != nil && resp.Response != nil {
+				resp.Response.Body.Close()
 			}
 			b.Stream <- data
 		}
