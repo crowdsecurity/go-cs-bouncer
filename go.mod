@@ -12,7 +12,6 @@ require (
 	github.com/go-openapi/swag v0.19.15 // indirect
 	github.com/go-openapi/validate v0.20.2 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
-	github.com/logrusorgru/grokky v0.0.0-20180829062225-47edf017d42c // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.8.1
