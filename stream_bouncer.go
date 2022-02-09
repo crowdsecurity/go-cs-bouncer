@@ -53,9 +53,12 @@ func (b *StreamBouncer) Init() error {
 func (b *StreamBouncer) Run() {
 	ticker := time.NewTicker(b.TickerIntervalDuration)
 
-	data, _, err := b.APIClient.Decisions.GetStream(context.Background(), true, b.Scopes) // true means we just started the bouncer
+	data, resp, err := b.APIClient.Decisions.GetStream(context.Background(), true, b.Scopes) // true means we just started the bouncer
 	if err != nil {
 		log.Fatalf(err.Error())
+	}
+	if resp != nil && resp.Response != nil {
+		resp.Response.Body.Close()
 	}
 
 	b.Stream <- data
