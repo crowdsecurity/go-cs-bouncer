@@ -21,6 +21,7 @@ type StreamBouncer struct {
 	APIClient              *apiclient.ApiClient
 	UserAgent              string
 	Scopes                 []string
+	InsecureSkipVerify     *bool
 }
 
 func (b *StreamBouncer) Init() error {
@@ -40,6 +41,12 @@ func (b *StreamBouncer) Init() error {
 	b.APIClient, err = apiclient.NewDefaultClient(apiURL, "v1", b.UserAgent, t.Client())
 	if err != nil {
 		return errors.Wrapf(err, "api client init")
+	}
+
+        if b.InsecureSkipVerify == nil {
+		apiclient.InsecureSkipVerify = false
+	} else {
+		apiclient.InsecureSkipVerify = *b.InsecureSkipVerify
 	}
 
 	b.TickerIntervalDuration, err = time.ParseDuration(b.TickerInterval)
