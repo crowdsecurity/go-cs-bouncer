@@ -33,13 +33,14 @@ func (b *LiveBouncer) Init() error {
 	if err != nil {
 		return errors.Wrapf(err, "api client init")
 	}
-	return nil
 
         if b.InsecureSkipVerify == nil {
 		apiclient.InsecureSkipVerify = false
 	} else {
 		apiclient.InsecureSkipVerify = *b.InsecureSkipVerify
 	}
+
+	return nil
 }
 
 func (b *LiveBouncer) Get(value string) (*models.GetDecisionsResponse, error) {
