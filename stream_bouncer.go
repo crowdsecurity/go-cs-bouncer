@@ -61,12 +61,14 @@ func (b *StreamBouncer) Run() {
 	ticker := time.NewTicker(b.TickerIntervalDuration)
 
 	data, resp, err := b.APIClient.Decisions.GetStream(context.Background(), true, b.Scopes) // true means we just started the bouncer
+
+	if resp != nil && resp.Response != nil {
+		resp.Response.Body.Close()
+	}
+
 	if err != nil {
 		log.Errorf(err.Error())
 		return
-	}
-	if resp != nil && resp.Response != nil {
-		resp.Response.Body.Close()
 	}
 
 	b.Stream <- data
