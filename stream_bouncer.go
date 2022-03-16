@@ -62,7 +62,8 @@ func (b *StreamBouncer) Run() {
 
 	data, resp, err := b.APIClient.Decisions.GetStream(context.Background(), true, b.Scopes) // true means we just started the bouncer
 	if err != nil {
-		log.Fatalf(err.Error())
+		log.Errorf(err.Error())
+		return
 	}
 	if resp != nil && resp.Response != nil {
 		resp.Response.Body.Close()
