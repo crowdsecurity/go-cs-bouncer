@@ -20,8 +20,8 @@ type StreamBouncer struct {
 	Stream                 chan *models.DecisionsStreamResponse
 	APIClient              *apiclient.ApiClient
 	UserAgent              string
-	Scopes                 []string
 	InsecureSkipVerify     *bool
+	Opts                   apiclient.DecisionsStreamOpts
 }
 
 func (b *StreamBouncer) Init() error {
@@ -53,14 +53,14 @@ func (b *StreamBouncer) Init() error {
 	if err != nil {
 		return errors.Wrapf(err, "unable to parse duration '%s'", b.TickerInterval)
 	}
-
 	return nil
 }
 
 func (b *StreamBouncer) Run() {
 	ticker := time.NewTicker(b.TickerIntervalDuration)
 
-	data, resp, err := b.APIClient.Decisions.GetStream(context.Background(), true, b.Scopes) // true means we just started the bouncer
+	b.Opts.Startup = true
+	data, resp, err := b.APIClient.Decisions.GetStream(context.Background(), b.Opts) // true means we just started the bouncer
 
 	if resp != nil && resp.Response != nil {
 		resp.Response.Body.Close()
@@ -72,22 +72,19 @@ func (b *StreamBouncer) Run() {
 	}
 
 	b.Stream <- data
-
-	for {
-		select {
-		case <-ticker.C:
-			data, resp, err := b.APIClient.Decisions.GetStream(context.Background(), false, b.Scopes)
-			if err != nil {
-				if resp != nil && resp.Response != nil {
-					resp.Response.Body.Close()
-				}
-				log.Errorf(err.Error())
-				continue
-			}
+	b.Opts.Startup = false
+	for range ticker.C {
+		data, resp, err := b.APIClient.Decisions.GetStream(context.Background(), b.Opts)
+		if err != nil {
 			if resp != nil && resp.Response != nil {
 				resp.Response.Body.Close()
 			}
-			b.Stream <- data
+			log.Errorf(err.Error())
+			continue
 		}
+		if resp != nil && resp.Response != nil {
+			resp.Response.Body.Close()
+		}
+		b.Stream <- data
 	}
 }
