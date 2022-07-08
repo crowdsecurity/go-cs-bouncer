@@ -13,7 +13,9 @@ import (
 )
 
 type LiveBouncer struct {
-	CommonBouncerConfig `yaml:",inline"`
+	APIKey             string `yaml:"api_key"`
+	APIUrl             string `yaml:"api_url"`
+	InsecureSkipVerify *bool  `yaml:"insecure_skip_verify"`
 
 	APIClient *apiclient.ApiClient
 	UserAgent string

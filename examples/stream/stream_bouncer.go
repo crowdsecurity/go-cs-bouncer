@@ -4,19 +4,25 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/crowdsecurity/crowdsec/pkg/apiclient"
 	csbouncer "github.com/crowdsecurity/go-cs-bouncer"
 )
 
 func main() {
 
-	bouncer := &csbouncer.StreamBouncer{
-		APIKey:         "b7c192ded4cce750cc66dbf42c0dba19",
-		APIUrl:         "http://localhost:8080/",
-		TickerInterval: "2s",
-		Opts: apiclient.DecisionsStreamOpts{
-			Origins: "capi",
-		},
+	//You can pass parameters to the bouncer constructor
+	//bouncer := &csbouncer.StreamBouncer{
+	//	APIKey: "ebd4db481d51525fd0df924a69193921",
+	//		APIUrl: "http://localhost:8080/",
+	//	}
+
+	//Or you can also use the Config() method with a path to a config file
+
+	bouncer := &csbouncer.StreamBouncer{}
+
+	err := bouncer.Config("./config.yaml")
+
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	if err := bouncer.Init(); err != nil {
