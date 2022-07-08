@@ -2,6 +2,10 @@ package csbouncer
 
 import (
 	"context"
+	"crypto/tls"
+	"crypto/x509"
+	"io/ioutil"
+	"net/http"
 	"net/url"
 	"time"
 
@@ -22,11 +26,16 @@ type StreamBouncer struct {
 	UserAgent              string
 	InsecureSkipVerify     *bool
 	Opts                   apiclient.DecisionsStreamOpts
+	CertPath               string
+	KeyPath                string
+	CAPath                 string
 }
 
 func (b *StreamBouncer) Init() error {
 	var err error
 	var apiURL *url.URL
+	var client *http.Client
+	var caCertPool *x509.CertPool
 
 	b.Stream = make(chan *models.DecisionsStreamResponse)
 
@@ -34,17 +43,56 @@ func (b *StreamBouncer) Init() error {
 	if err != nil {
 		return errors.Wrapf(err, "local API Url '%s'", b.APIUrl)
 	}
-	t := &apiclient.APIKeyTransport{
-		APIKey: b.APIKey,
-	}
+	if b.APIKey != "" {
+		log.Infof("Using API key auth")
+		t := &apiclient.APIKeyTransport{
+			APIKey: b.APIKey,
+		}
+		client = t.Client()
+		if b.InsecureSkipVerify == nil {
+			apiclient.InsecureSkipVerify = false
+		} else {
+			apiclient.InsecureSkipVerify = *b.InsecureSkipVerify
+		}
+	} else if b.CertPath != "" && b.KeyPath != "" {
+		var InsecureSkipVerify bool
+		log.Infof("Using cert auth with cert '%s' and key '%s'", b.CertPath, b.KeyPath)
+		certificate, err := tls.LoadX509KeyPair(b.CertPath, b.KeyPath)
+		if err != nil {
+			return errors.Wrapf(err, "unable to load certificate '%s' and key '%s'", b.CertPath, b.KeyPath)
+		}
 
-	if b.InsecureSkipVerify == nil {
-		apiclient.InsecureSkipVerify = false
+		if b.CAPath != "" {
+			log.Infof("Using CA cert '%s'", b.CAPath)
+			caCert, err := ioutil.ReadFile(b.CAPath)
+			if err != nil {
+				return errors.Wrapf(err, "unable to load CA certificate '%s'", b.CAPath)
+			}
+			caCertPool = x509.NewCertPool()
+			caCertPool.AppendCertsFromPEM(caCert)
+		} else {
+			caCertPool = nil
+		}
+
+		if b.InsecureSkipVerify == nil {
+			InsecureSkipVerify = false
+		} else {
+			InsecureSkipVerify = *b.InsecureSkipVerify
+		}
+
+		client = &http.Client{}
+		client.Transport = &http.Transport{
+			TLSClientConfig: &tls.Config{
+				RootCAs:            caCertPool,
+				Certificates:       []tls.Certificate{certificate},
+				InsecureSkipVerify: InsecureSkipVerify,
+			},
+		}
 	} else {
-		apiclient.InsecureSkipVerify = *b.InsecureSkipVerify
+		return errors.New("no API key or certificate provided")
 	}
 
-	b.APIClient, err = apiclient.NewDefaultClient(apiURL, "v1", b.UserAgent, t.Client())
+	b.APIClient, err = apiclient.NewDefaultClient(apiURL, "v1", b.UserAgent, client)
 	if err != nil {
 		return errors.Wrapf(err, "api client init")
 	}
