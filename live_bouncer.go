@@ -10,20 +10,34 @@ import (
 
 	"github.com/crowdsecurity/crowdsec/pkg/apiclient"
 	"github.com/crowdsecurity/crowdsec/pkg/models"
+	"gopkg.in/yaml.v2"
 
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 )
 
 type LiveBouncer struct {
-	APIKey             string
-	APIUrl             string
-	APIClient          *apiclient.ApiClient
-	UserAgent          string
-	InsecureSkipVerify *bool
-	CertPath           string
-	KeyPath            string
-	CAPath             string
+	APIKey             string `yaml:"api_key"`
+	APIUrl             string `yaml:"api_url"`
+	InsecureSkipVerify *bool  `yaml:"insecure_skip_verify"`
+	CertPath           string `yaml:"cert_path"`
+	KeyPath            string `yaml:"key_path"`
+	CAPath             string `yaml:"ca_path"`
+
+	APIClient *apiclient.ApiClient
+	UserAgent string
+}
+
+func (b *LiveBouncer) Config(configPath string) error {
+	content, err := ioutil.ReadFile(configPath)
+	if err != nil {
+		return errors.Wrapf(err, "unable to read config file '%s': %s", configPath, err)
+	}
+	err = yaml.Unmarshal(content, b)
+	if err != nil {
+		return errors.Wrapf(err, "unable to unmarshal config file '%s': %s", configPath, err)
+	}
+	return nil
 }
 
 func (b *LiveBouncer) Init() error {

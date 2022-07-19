@@ -8,7 +8,6 @@ require (
 	github.com/crowdsecurity/crowdsec v1.3.5-0.20220608140552-1c0fe095768b
 	github.com/go-openapi/analysis v0.21.3 // indirect
 	github.com/go-openapi/errors v0.20.2 // indirect
-	github.com/go-openapi/runtime v0.23.3 // indirect
 	github.com/go-openapi/spec v0.20.5 // indirect
 	github.com/go-openapi/strfmt v0.21.2 // indirect
 	github.com/go-openapi/validate v0.22.0 // indirect

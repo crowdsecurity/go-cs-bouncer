@@ -7,9 +7,11 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 
 	log "github.com/sirupsen/logrus"
+	"gopkg.in/yaml.v2"
 
 	"github.com/crowdsecurity/crowdsec/pkg/apiclient"
 	"github.com/crowdsecurity/crowdsec/pkg/models"
@@ -17,18 +19,53 @@ import (
 )
 
 type StreamBouncer struct {
-	APIKey                 string
-	APIUrl                 string
-	TickerInterval         string
+	APIKey             string `yaml:"api_key"`
+	APIUrl             string `yaml:"api_url"`
+	InsecureSkipVerify *bool  `yaml:"insecure_skip_verify"`
+	CertPath           string `yaml:"cert_path"`
+	KeyPath            string `yaml:"key_path"`
+	CAPath             string `yaml:"ca_path"`
+
+	TickerInterval         string   `yaml:"update_frequency"`
+	Scopes                 []string `yaml:"scopes"`
+	ScenariosContaining    []string `yaml:"scenarios_containing"`
+	ScenariosNotContaining []string `yaml:"scenarios_not_containing"`
+	Origins                []string `yaml:"origins"`
+
 	TickerIntervalDuration time.Duration
 	Stream                 chan *models.DecisionsStreamResponse
 	APIClient              *apiclient.ApiClient
 	UserAgent              string
-	InsecureSkipVerify     *bool
 	Opts                   apiclient.DecisionsStreamOpts
-	CertPath               string
-	KeyPath                string
-	CAPath                 string
+}
+
+func (b *StreamBouncer) Config(configPath string) error {
+	content, err := ioutil.ReadFile(configPath)
+	if err != nil {
+		return errors.Wrapf(err, "unable to read config file '%s': %s", configPath, err)
+	}
+	err = yaml.Unmarshal(content, b)
+	if err != nil {
+		return errors.Wrapf(err, "unable to unmarshal config file '%s': %s", configPath, err)
+	}
+
+	if b.Scopes != nil {
+		b.Opts.Scopes = strings.Join(b.Scopes, ",")
+	}
+
+	if b.ScenariosContaining != nil {
+		b.Opts.ScenariosContaining = strings.Join(b.ScenariosContaining, ",")
+	}
+
+	if b.ScenariosNotContaining != nil {
+		b.Opts.ScenariosNotContaining = strings.Join(b.ScenariosNotContaining, ",")
+	}
+
+	if b.Origins != nil {
+		b.Opts.Origins = strings.Join(b.Origins, ",")
+	}
+
+	return nil
 }
 
 func (b *StreamBouncer) Init() error {
