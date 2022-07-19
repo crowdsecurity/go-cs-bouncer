@@ -1,0 +1,7 @@
+api_url: http://localhost:8080/
+api_key: 155c98929756e2bfcec10103c5c3c19c
+update_frequency: 10s
+origins:
+  - CAPI
+scenarios_containing:
+  - ssh
