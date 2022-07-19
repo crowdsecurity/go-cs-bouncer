@@ -3,9 +3,8 @@ module github.com/crowdsecurity/go-cs-bouncer
 go 1.15
 
 require (
-	ariga.io/atlas v0.3.7 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d // indirect
-	github.com/crowdsecurity/crowdsec v1.3.5-0.20220608140552-1c0fe095768b
+	github.com/crowdsecurity/crowdsec v1.4.0
 	github.com/go-openapi/analysis v0.21.3 // indirect
 	github.com/go-openapi/errors v0.20.2 // indirect
 	github.com/go-openapi/spec v0.20.5 // indirect
@@ -18,4 +17,5 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.8.1
 	golang.org/x/net v0.0.0-20220421235706-1d1ef9303861 // indirect
+	gopkg.in/yaml.v2 v2.4.0
 )

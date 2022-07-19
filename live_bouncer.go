@@ -4,9 +4,11 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strings"
 
 	"github.com/crowdsecurity/crowdsec/pkg/apiclient"
 	"github.com/crowdsecurity/crowdsec/pkg/models"
@@ -37,6 +39,17 @@ func (b *LiveBouncer) Config(configPath string) error {
 	if err != nil {
 		return errors.Wrapf(err, "unable to unmarshal config file '%s': %s", configPath, err)
 	}
+
+	if b.APIUrl == "" {
+		return fmt.Errorf("config does not contain LAPI url")
+	}
+	if !strings.HasSuffix(b.APIUrl, "/") {
+		b.APIUrl += "/"
+	}
+	if b.APIKey == "" && b.CertPath == "" && b.KeyPath == "" {
+		return fmt.Errorf("config does not contain LAPI key or certificate")
+	}
+
 	return nil
 }
 

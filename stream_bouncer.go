@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -24,7 +25,7 @@ type StreamBouncer struct {
 	InsecureSkipVerify *bool  `yaml:"insecure_skip_verify"`
 	CertPath           string `yaml:"cert_path"`
 	KeyPath            string `yaml:"key_path"`
-	CAPath             string `yaml:"ca_path"`
+	CAPath             string `yaml:"ca_cert_path"`
 
 	TickerInterval         string   `yaml:"update_frequency"`
 	Scopes                 []string `yaml:"scopes"`
@@ -63,6 +64,16 @@ func (b *StreamBouncer) Config(configPath string) error {
 
 	if b.Origins != nil {
 		b.Opts.Origins = strings.Join(b.Origins, ",")
+	}
+
+	if b.APIUrl == "" {
+		return fmt.Errorf("config does not contain LAPI url")
+	}
+	if !strings.HasSuffix(b.APIUrl, "/") {
+		b.APIUrl += "/"
+	}
+	if b.APIKey == "" && b.CertPath == "" && b.KeyPath == "" {
+		return fmt.Errorf("config does not contain LAPI key or certificate")
 	}
 
 	return nil
