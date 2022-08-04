@@ -21,13 +21,13 @@ import (
 )
 
 var TotalLAPIError prometheus.Counter = prometheus.NewCounter(prometheus.CounterOpts{
-	Name: "total_lapi_call_failures",
+	Name: "lapi_requests_failures_total",
 	Help: "The total number of failed calls to CrowdSec LAPI",
 },
 )
 
 var TotalLAPICalls prometheus.Counter = prometheus.NewCounter(prometheus.CounterOpts{
-	Name: "total_lapi_calls",
+	Name: "lapi_requests_total",
 	Help: "The total number of calls to CrowdSec LAPI",
 },
 )
