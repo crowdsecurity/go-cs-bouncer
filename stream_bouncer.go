@@ -11,12 +11,25 @@ import (
 	"strings"
 	"time"
 
+	"github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 
 	"github.com/crowdsecurity/crowdsec/pkg/apiclient"
 	"github.com/crowdsecurity/crowdsec/pkg/models"
 	"github.com/pkg/errors"
+)
+
+var TotalLAPIError prometheus.Counter = prometheus.NewCounter(prometheus.CounterOpts{
+	Name: "lapi_requests_failures_total",
+	Help: "The total number of failed calls to CrowdSec LAPI",
+},
+)
+
+var TotalLAPICalls prometheus.Counter = prometheus.NewCounter(prometheus.CounterOpts{
+	Name: "lapi_requests_total",
+	Help: "The total number of calls to CrowdSec LAPI",
+},
 )
 
 type StreamBouncer struct {
@@ -156,7 +169,17 @@ func (b *StreamBouncer) Run() {
 	ticker := time.NewTicker(b.TickerIntervalDuration)
 
 	b.Opts.Startup = true
-	data, resp, err := b.APIClient.Decisions.GetStream(context.Background(), b.Opts) // true means we just started the bouncer
+
+	getDecisionStream := func() (*models.DecisionsStreamResponse, *apiclient.Response, error) {
+		data, resp, err := b.APIClient.Decisions.GetStream(context.Background(), b.Opts)
+		TotalLAPICalls.Inc()
+		if err != nil {
+			TotalLAPIError.Inc()
+		}
+		return data, resp, err
+	}
+
+	data, resp, err := getDecisionStream()
 
 	if resp != nil && resp.Response != nil {
 		resp.Response.Body.Close()
@@ -170,7 +193,7 @@ func (b *StreamBouncer) Run() {
 	b.Stream <- data
 	b.Opts.Startup = false
 	for range ticker.C {
-		data, resp, err := b.APIClient.Decisions.GetStream(context.Background(), b.Opts)
+		data, resp, err := getDecisionStream()
 		if err != nil {
 			if resp != nil && resp.Response != nil {
 				resp.Response.Body.Close()
