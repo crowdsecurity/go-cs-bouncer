@@ -109,18 +109,6 @@ func (b *LiveBouncer) Init() error {
 		ok = true
 	}
 
-	if b.CAPath != "" {
-		log.Infof("Using CA cert '%s'", b.CAPath)
-		caCert, err := ioutil.ReadFile(b.CAPath)
-		if err != nil {
-			return errors.Wrapf(err, "unable to load CA certificate '%s'", b.CAPath)
-		}
-		caCertPool = x509.NewCertPool()
-		caCertPool.AppendCertsFromPEM(caCert)
-	} else {
-		caCertPool = nil
-	}
-
 	if b.APIKey != "" {
 		log.Infof("Using API key auth")
 		var transport *apiclient.APIKeyTransport

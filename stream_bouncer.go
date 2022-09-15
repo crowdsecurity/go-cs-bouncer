@@ -148,6 +148,7 @@ func (b *StreamBouncer) Init() error {
 		client = transport.Client()
 		ok = true
 	}
+
 	if b.CertPath != "" && b.KeyPath != "" {
 		var certificate tls.Certificate
 
