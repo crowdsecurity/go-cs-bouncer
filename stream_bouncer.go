@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
@@ -97,6 +98,8 @@ func (b *StreamBouncer) Init() error {
 	var apiURL *url.URL
 	var client *http.Client
 	var caCertPool *x509.CertPool
+	var ok bool
+	var InsecureSkipVerify bool
 
 	b.Stream = make(chan *models.DecisionsStreamResponse)
 
@@ -104,19 +107,27 @@ func (b *StreamBouncer) Init() error {
 	if err != nil {
 		return errors.Wrapf(err, "local API Url '%s'", b.APIUrl)
 	}
+
+	if b.InsecureSkipVerify == nil {
+		InsecureSkipVerify = false
+	} else {
+		InsecureSkipVerify = *b.InsecureSkipVerify
+	}
+
 	if b.APIKey != "" {
 		log.Infof("Using API key auth")
-		t := &apiclient.APIKeyTransport{
+		transport := &apiclient.APIKeyTransport{
 			APIKey: b.APIKey,
+			Transport: &http.Transport{
+				TLSClientConfig: &tls.Config{
+					InsecureSkipVerify: InsecureSkipVerify,
+				},
+			},
 		}
-		client = t.Client()
-		if b.InsecureSkipVerify == nil {
-			apiclient.InsecureSkipVerify = false
-		} else {
-			apiclient.InsecureSkipVerify = *b.InsecureSkipVerify
-		}
-	} else if b.CertPath != "" && b.KeyPath != "" {
-		var InsecureSkipVerify bool
+		client = transport.Client()
+		ok = true
+	}
+	if b.CertPath != "" && b.KeyPath != "" {
 		log.Infof("Using cert auth with cert '%s' and key '%s'", b.CertPath, b.KeyPath)
 		certificate, err := tls.LoadX509KeyPair(b.CertPath, b.KeyPath)
 		if err != nil {
@@ -135,12 +146,6 @@ func (b *StreamBouncer) Init() error {
 			caCertPool = nil
 		}
 
-		if b.InsecureSkipVerify == nil {
-			InsecureSkipVerify = false
-		} else {
-			InsecureSkipVerify = *b.InsecureSkipVerify
-		}
-
 		client = &http.Client{}
 		client.Transport = &http.Transport{
 			TLSClientConfig: &tls.Config{
@@ -149,14 +154,19 @@ func (b *StreamBouncer) Init() error {
 				InsecureSkipVerify: InsecureSkipVerify,
 			},
 		}
-	} else {
-		return errors.New("no API key or certificate provided")
+		ok = true
 	}
 
+	if !ok {
+		return errors.New("no API key nor certificate provided")
+	}
+
+	fmt.Printf("client: %+v", spew.Sdump(client))
 	b.APIClient, err = apiclient.NewDefaultClient(apiURL, "v1", b.UserAgent, client)
 	if err != nil {
 		return errors.Wrapf(err, "api client init")
 	}
+	fmt.Printf("client: %+v", spew.Sdump(client))
 
 	b.TickerIntervalDuration, err = time.ParseDuration(b.TickerInterval)
 	if err != nil {
