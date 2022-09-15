@@ -109,28 +109,6 @@ func (b *LiveBouncer) Init() error {
 		ok = true
 	}
 
-	if b.APIKey != "" {
-		log.Infof("Using API key auth")
-		var transport *apiclient.APIKeyTransport
-		if apiURL.Scheme == "https" {
-			transport = &apiclient.APIKeyTransport{
-				APIKey: b.APIKey,
-				Transport: &http.Transport{
-					TLSClientConfig: &tls.Config{
-						RootCAs:            caCertPool,
-						InsecureSkipVerify: InsecureSkipVerify,
-					},
-				},
-			}
-		} else {
-			transport = &apiclient.APIKeyTransport{
-				APIKey: b.APIKey,
-			}
-		}
-		client = transport.Client()
-		ok = true
-	}
-
 	if b.CertPath != "" && b.KeyPath != "" {
 		var certificate tls.Certificate
 
