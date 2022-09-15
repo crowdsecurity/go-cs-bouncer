@@ -65,15 +65,36 @@ func (b *LiveBouncer) Init() error {
 		return errors.Wrapf(err, "local API Url '%s'", b.APIUrl)
 	}
 
+	if b.CAPath != "" {
+		log.Infof("Using CA cert '%s'", b.CAPath)
+		caCert, err := ioutil.ReadFile(b.CAPath)
+		if err != nil {
+			return errors.Wrapf(err, "unable to load CA certificate '%s'", b.CAPath)
+		}
+		caCertPool = x509.NewCertPool()
+		caCertPool.AppendCertsFromPEM(caCert)
+	} else {
+		caCertPool = nil
+	}
+
 	if b.APIKey != "" {
+		var transport *apiclient.APIKeyTransport
 		log.Infof("Using API key auth")
-		transport := &apiclient.APIKeyTransport{
-			APIKey: b.APIKey,
-			Transport: &http.Transport{
-				TLSClientConfig: &tls.Config{
-					InsecureSkipVerify: InsecureSkipVerify,
+		if apiURL.Scheme == "https" {
+			transport = &apiclient.APIKeyTransport{
+				APIKey: b.APIKey,
+				Transport: &http.Transport{
+					TLSClientConfig: &tls.Config{
+						RootCAs:            caCertPool,
+						InsecureSkipVerify: InsecureSkipVerify,
+					},
 				},
-			},
+			}
+		} else {
+			transport = &apiclient.APIKeyTransport{
+				APIKey: b.APIKey,
+			}
+
 		}
 		client = transport.Client()
 		ok = true
@@ -83,18 +104,6 @@ func (b *LiveBouncer) Init() error {
 		certificate, err := tls.LoadX509KeyPair(b.CertPath, b.KeyPath)
 		if err != nil {
 			return errors.Wrapf(err, "unable to load certificate '%s' and key '%s'", b.CertPath, b.KeyPath)
-		}
-
-		if b.CAPath != "" {
-			log.Infof("Using CA cert '%s'", b.CAPath)
-			caCert, err := ioutil.ReadFile(b.CAPath)
-			if err != nil {
-				return errors.Wrapf(err, "unable to load CA certificate '%s'", b.CAPath)
-			}
-			caCertPool = x509.NewCertPool()
-			caCertPool.AppendCertsFromPEM(caCert)
-		} else {
-			caCertPool = nil
 		}
 
 		if b.InsecureSkipVerify == nil {
