@@ -100,7 +100,6 @@ func (b *StreamBouncer) Init() error {
 		caCertPool         *x509.CertPool
 		ok                 bool
 		InsecureSkipVerify bool
-		use_certificate    bool = false
 		certificate        tls.Certificate
 	)
 
@@ -135,13 +134,12 @@ func (b *StreamBouncer) Init() error {
 		} else {
 			caCertPool = nil
 		}
-		use_certificate = true
 	}
 
 	if b.APIKey != "" {
 		var transport *apiclient.APIKeyTransport
 		log.Infof("Using API key auth")
-		if use_certificate {
+		if apiURL.Scheme == "https" {
 			transport = &apiclient.APIKeyTransport{
 				APIKey: b.APIKey,
 				Transport: &http.Transport{
@@ -165,7 +163,7 @@ func (b *StreamBouncer) Init() error {
 		client = transport.Client()
 		ok = true
 	}
-	if b.APIKey == "" && use_certificate {
+	if  {
 		log.Infof("Using cert auth")
 
 		client = &http.Client{}
