@@ -77,6 +77,12 @@ func (b *LiveBouncer) Init() error {
 		caCertPool = nil
 	}
 
+	if b.InsecureSkipVerify == nil {
+		InsecureSkipVerify = false
+	} else {
+		InsecureSkipVerify = *b.InsecureSkipVerify
+	}
+
 	if b.APIKey != "" {
 		var transport *apiclient.APIKeyTransport
 		log.Infof("Using API key auth")
@@ -104,12 +110,6 @@ func (b *LiveBouncer) Init() error {
 		certificate, err := tls.LoadX509KeyPair(b.CertPath, b.KeyPath)
 		if err != nil {
 			return errors.Wrapf(err, "unable to load certificate '%s' and key '%s'", b.CertPath, b.KeyPath)
-		}
-
-		if b.InsecureSkipVerify == nil {
-			InsecureSkipVerify = false
-		} else {
-			InsecureSkipVerify = *b.InsecureSkipVerify
 		}
 
 		client = &http.Client{}
