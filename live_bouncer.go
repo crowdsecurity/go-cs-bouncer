@@ -68,10 +68,46 @@ func (b *LiveBouncer) Init() error {
 		return errors.Wrapf(err, "local API Url '%s'", b.APIUrl)
 	}
 
+	if b.CAPath != "" {
+		log.Infof("Using CA cert '%s'", b.CAPath)
+		caCert, err := ioutil.ReadFile(b.CAPath)
+		if err != nil {
+			return errors.Wrapf(err, "unable to load CA certificate '%s'", b.CAPath)
+		}
+		caCertPool = x509.NewCertPool()
+		caCertPool.AppendCertsFromPEM(caCert)
+	} else {
+		caCertPool = nil
+	}
+
 	if b.InsecureSkipVerify == nil {
 		InsecureSkipVerify = false
 	} else {
 		InsecureSkipVerify = *b.InsecureSkipVerify
+
+	}
+
+	if b.APIKey != "" {
+		var transport *apiclient.APIKeyTransport
+		log.Infof("Using API key auth")
+		if apiURL.Scheme == "https" {
+			transport = &apiclient.APIKeyTransport{
+				APIKey: b.APIKey,
+				Transport: &http.Transport{
+					TLSClientConfig: &tls.Config{
+						RootCAs:            caCertPool,
+						InsecureSkipVerify: InsecureSkipVerify,
+					},
+				},
+			}
+		} else {
+			transport = &apiclient.APIKeyTransport{
+				APIKey: b.APIKey,
+			}
+
+		}
+		client = transport.Client()
+		ok = true
 	}
 
 	if b.CAPath != "" {

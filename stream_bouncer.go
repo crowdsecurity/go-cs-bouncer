@@ -116,36 +116,27 @@ func (b *StreamBouncer) Init() error {
 		InsecureSkipVerify = *b.InsecureSkipVerify
 	}
 
-	if b.CertPath != "" && b.KeyPath != "" {
-		log.Infof("Using cert auth with cert '%s' and key '%s'", b.CertPath, b.KeyPath)
-		certificate, err = tls.LoadX509KeyPair(b.CertPath, b.KeyPath)
+	if b.CAPath != "" {
+		log.Infof("Using CA cert '%s'", b.CAPath)
+		caCert, err := ioutil.ReadFile(b.CAPath)
 		if err != nil {
-			return errors.Wrapf(err, "unable to load certificate '%s' and key '%s'", b.CertPath, b.KeyPath)
+			return errors.Wrapf(err, "unable to load CA certificate '%s'", b.CAPath)
 		}
-
-		if b.CAPath != "" {
-			log.Infof("Using CA cert '%s'", b.CAPath)
-			caCert, err := ioutil.ReadFile(b.CAPath)
-			if err != nil {
-				return errors.Wrapf(err, "unable to load CA certificate '%s'", b.CAPath)
-			}
-			caCertPool = x509.NewCertPool()
-			caCertPool.AppendCertsFromPEM(caCert)
-		} else {
-			caCertPool = nil
-		}
+		caCertPool = x509.NewCertPool()
+		caCertPool.AppendCertsFromPEM(caCert)
+	} else {
+		caCertPool = nil
 	}
 
 	if b.APIKey != "" {
-		var transport *apiclient.APIKeyTransport
 		log.Infof("Using API key auth")
+		var transport *apiclient.APIKeyTransport
 		if apiURL.Scheme == "https" {
 			transport = &apiclient.APIKeyTransport{
 				APIKey: b.APIKey,
 				Transport: &http.Transport{
 					TLSClientConfig: &tls.Config{
 						RootCAs:            caCertPool,
-						Certificates:       []tls.Certificate{certificate},
 						InsecureSkipVerify: InsecureSkipVerify,
 					},
 				},
@@ -153,18 +144,17 @@ func (b *StreamBouncer) Init() error {
 		} else {
 			transport = &apiclient.APIKeyTransport{
 				APIKey: b.APIKey,
-				Transport: &http.Transport{
-					TLSClientConfig: &tls.Config{
-						InsecureSkipVerify: InsecureSkipVerify,
-					},
-				},
 			}
 		}
 		client = transport.Client()
 		ok = true
 	}
-	if  {
-		log.Infof("Using cert auth")
+	if b.CertPath != "" && b.KeyPath != "" {
+		log.Infof("Using cert auth with cert '%s' and key '%s'", b.CertPath, b.KeyPath)
+		certificate, err = tls.LoadX509KeyPair(b.CertPath, b.KeyPath)
+		if err != nil {
+			return errors.Wrapf(err, "unable to load certificate '%s' and key '%s'", b.CertPath, b.KeyPath)
+		}
 
 		client = &http.Client{}
 		client.Transport = &http.Transport{
