@@ -11,7 +11,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
@@ -161,12 +160,10 @@ func (b *StreamBouncer) Init() error {
 		return errors.New("no API key nor certificate provided")
 	}
 
-	fmt.Printf("client: %+v", spew.Sdump(client))
 	b.APIClient, err = apiclient.NewDefaultClient(apiURL, "v1", b.UserAgent, client)
 	if err != nil {
 		return errors.Wrapf(err, "api client init")
 	}
-	fmt.Printf("client: %+v", spew.Sdump(client))
 
 	b.TickerIntervalDuration, err = time.ParseDuration(b.TickerInterval)
 	if err != nil {

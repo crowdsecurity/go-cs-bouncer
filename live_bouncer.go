@@ -58,6 +58,8 @@ func (b *LiveBouncer) Init() error {
 	var apiURL *url.URL
 	var client *http.Client
 	var caCertPool *x509.CertPool
+	var InsecureSkipVerify bool
+	var ok bool
 	apiURL, err = url.Parse(b.APIUrl)
 	if err != nil {
 		return errors.Wrapf(err, "local API Url '%s'", b.APIUrl)
@@ -65,17 +67,18 @@ func (b *LiveBouncer) Init() error {
 
 	if b.APIKey != "" {
 		log.Infof("Using API key auth")
-		t := &apiclient.APIKeyTransport{
+		transport := &apiclient.APIKeyTransport{
 			APIKey: b.APIKey,
+			Transport: &http.Transport{
+				TLSClientConfig: &tls.Config{
+					InsecureSkipVerify: InsecureSkipVerify,
+				},
+			},
 		}
-		client = t.Client()
-		if b.InsecureSkipVerify == nil {
-			apiclient.InsecureSkipVerify = false
-		} else {
-			apiclient.InsecureSkipVerify = *b.InsecureSkipVerify
-		}
-	} else if b.CertPath != "" && b.KeyPath != "" {
-		var InsecureSkipVerify bool
+		client = transport.Client()
+		ok = true
+	}
+	if b.CertPath != "" && b.KeyPath != "" {
 		log.Infof("Using cert auth")
 		certificate, err := tls.LoadX509KeyPair(b.CertPath, b.KeyPath)
 		if err != nil {
@@ -108,7 +111,10 @@ func (b *LiveBouncer) Init() error {
 				InsecureSkipVerify: InsecureSkipVerify,
 			},
 		}
-	} else {
+		ok = true
+	}
+
+	if !ok {
 		return errors.New("no API key or certificate provided")
 	}
 
