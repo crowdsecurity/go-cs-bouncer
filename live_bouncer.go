@@ -61,7 +61,6 @@ func (b *LiveBouncer) Init() error {
 		caCertPool         *x509.CertPool
 		InsecureSkipVerify bool
 		ok                 bool
-		certificate        tls.Certificate
 	)
 	apiURL, err = url.Parse(b.APIUrl)
 	if err != nil {
@@ -145,6 +144,8 @@ func (b *LiveBouncer) Init() error {
 	}
 
 	if b.CertPath != "" && b.KeyPath != "" {
+		var certificate tls.Certificate
+
 		log.Infof("Using cert auth")
 		certificate, err = tls.LoadX509KeyPair(b.CertPath, b.KeyPath)
 		if err != nil {

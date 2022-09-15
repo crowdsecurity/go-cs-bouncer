@@ -100,7 +100,6 @@ func (b *StreamBouncer) Init() error {
 		caCertPool         *x509.CertPool
 		ok                 bool
 		InsecureSkipVerify bool
-		certificate        tls.Certificate
 	)
 
 	b.Stream = make(chan *models.DecisionsStreamResponse)
@@ -150,6 +149,8 @@ func (b *StreamBouncer) Init() error {
 		ok = true
 	}
 	if b.CertPath != "" && b.KeyPath != "" {
+		var certificate tls.Certificate
+
 		log.Infof("Using cert auth with cert '%s' and key '%s'", b.CertPath, b.KeyPath)
 		certificate, err = tls.LoadX509KeyPair(b.CertPath, b.KeyPath)
 		if err != nil {
