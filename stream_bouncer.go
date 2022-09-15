@@ -93,12 +93,16 @@ func (b *StreamBouncer) Config(configPath string) error {
 }
 
 func (b *StreamBouncer) Init() error {
-	var err error
-	var apiURL *url.URL
-	var client *http.Client
-	var caCertPool *x509.CertPool
-	var ok bool
-	var InsecureSkipVerify bool
+	var (
+		err                error
+		apiURL             *url.URL
+		client             *http.Client
+		caCertPool         *x509.CertPool
+		ok                 bool
+		InsecureSkipVerify bool
+		use_certificate    bool = false
+		certificate        tls.Certificate
+	)
 
 	b.Stream = make(chan *models.DecisionsStreamResponse)
 
@@ -148,7 +152,7 @@ func (b *StreamBouncer) Init() error {
 	}
 	if b.CertPath != "" && b.KeyPath != "" {
 		log.Infof("Using cert auth with cert '%s' and key '%s'", b.CertPath, b.KeyPath)
-		certificate, err := tls.LoadX509KeyPair(b.CertPath, b.KeyPath)
+		certificate, err = tls.LoadX509KeyPair(b.CertPath, b.KeyPath)
 		if err != nil {
 			return errors.Wrapf(err, "unable to load certificate '%s' and key '%s'", b.CertPath, b.KeyPath)
 		}
