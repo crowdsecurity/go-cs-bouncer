@@ -93,12 +93,16 @@ func (b *StreamBouncer) Config(configPath string) error {
 }
 
 func (b *StreamBouncer) Init() error {
-	var err error
-	var apiURL *url.URL
-	var client *http.Client
-	var caCertPool *x509.CertPool
-	var ok bool
-	var InsecureSkipVerify bool
+	var (
+		err                error
+		apiURL             *url.URL
+		client             *http.Client
+		caCertPool         *x509.CertPool
+		ok                 bool
+		InsecureSkipVerify bool
+		use_certificate    bool = false
+		certificate        tls.Certificate
+	)
 
 	b.Stream = make(chan *models.DecisionsStreamResponse)
 
@@ -113,22 +117,9 @@ func (b *StreamBouncer) Init() error {
 		InsecureSkipVerify = *b.InsecureSkipVerify
 	}
 
-	if b.APIKey != "" {
-		log.Infof("Using API key auth")
-		transport := &apiclient.APIKeyTransport{
-			APIKey: b.APIKey,
-			Transport: &http.Transport{
-				TLSClientConfig: &tls.Config{
-					InsecureSkipVerify: InsecureSkipVerify,
-				},
-			},
-		}
-		client = transport.Client()
-		ok = true
-	}
 	if b.CertPath != "" && b.KeyPath != "" {
 		log.Infof("Using cert auth with cert '%s' and key '%s'", b.CertPath, b.KeyPath)
-		certificate, err := tls.LoadX509KeyPair(b.CertPath, b.KeyPath)
+		certificate, err = tls.LoadX509KeyPair(b.CertPath, b.KeyPath)
 		if err != nil {
 			return errors.Wrapf(err, "unable to load certificate '%s' and key '%s'", b.CertPath, b.KeyPath)
 		}
@@ -144,6 +135,38 @@ func (b *StreamBouncer) Init() error {
 		} else {
 			caCertPool = nil
 		}
+		use_certificate = true
+	}
+
+	if b.APIKey != "" {
+		var transport *apiclient.APIKeyTransport
+		log.Infof("Using API key auth")
+		if use_certificate {
+			transport = &apiclient.APIKeyTransport{
+				APIKey: b.APIKey,
+				Transport: &http.Transport{
+					TLSClientConfig: &tls.Config{
+						RootCAs:            caCertPool,
+						Certificates:       []tls.Certificate{certificate},
+						InsecureSkipVerify: InsecureSkipVerify,
+					},
+				},
+			}
+		} else {
+			transport = &apiclient.APIKeyTransport{
+				APIKey: b.APIKey,
+				Transport: &http.Transport{
+					TLSClientConfig: &tls.Config{
+						InsecureSkipVerify: InsecureSkipVerify,
+					},
+				},
+			}
+		}
+		client = transport.Client()
+		ok = true
+	}
+	if b.APIKey == "" && use_certificate {
+		log.Infof("Using cert auth")
 
 		client = &http.Client{}
 		client.Transport = &http.Transport{
