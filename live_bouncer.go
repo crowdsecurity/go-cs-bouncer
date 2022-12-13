@@ -4,18 +4,20 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
+	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
+	"gopkg.in/yaml.v2"
 
 	"github.com/crowdsecurity/crowdsec/pkg/apiclient"
 	"github.com/crowdsecurity/crowdsec/pkg/models"
-	"gopkg.in/yaml.v2"
-
-	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus"
 )
 
 type LiveBouncer struct {
@@ -30,14 +32,25 @@ type LiveBouncer struct {
 	UserAgent string
 }
 
+// Config() fills the struct with configuration values from a file. It is not
+// aware of .yaml.local files so it is recommended to use ConfigReader() instead
 func (b *LiveBouncer) Config(configPath string) error {
-	content, err := ioutil.ReadFile(configPath)
+	reader, err := os.Open(configPath)
 	if err != nil {
-		return errors.Wrapf(err, "unable to read config file '%s': %s", configPath, err)
+		return fmt.Errorf("unable to read config file '%s': %w", configPath, err)
+	}
+
+	return b.ConfigReader(reader)
+}
+
+func (b *LiveBouncer) ConfigReader(configReader io.Reader) error {
+	content, err := io.ReadAll(configReader)
+	if err != nil {
+		return fmt.Errorf("unable to read configuration: %w", err)
 	}
 	err = yaml.Unmarshal(content, b)
 	if err != nil {
-		return errors.Wrapf(err, "unable to unmarshal config file '%s': %s", configPath, err)
+		return fmt.Errorf("unable to unmarshal configuration: %w", err)
 	}
 
 	if b.APIUrl == "" {
@@ -64,14 +77,14 @@ func (b *LiveBouncer) Init() error {
 	)
 	apiURL, err = url.Parse(b.APIUrl)
 	if err != nil {
-		return errors.Wrapf(err, "local API Url '%s'", b.APIUrl)
+		return fmt.Errorf("local API Url '%s': %w", b.APIUrl, err)
 	}
 
 	if b.CAPath != "" {
 		log.Infof("Using CA cert '%s'", b.CAPath)
 		caCert, err := ioutil.ReadFile(b.CAPath)
 		if err != nil {
-			return errors.Wrapf(err, "unable to load CA certificate '%s'", b.CAPath)
+			return fmt.Errorf("unable to load CA certificate '%s': %w", b.CAPath, err)
 		}
 		caCertPool = x509.NewCertPool()
 		caCertPool.AppendCertsFromPEM(caCert)
@@ -115,7 +128,7 @@ func (b *LiveBouncer) Init() error {
 		log.Infof("Using cert auth")
 		certificate, err = tls.LoadX509KeyPair(b.CertPath, b.KeyPath)
 		if err != nil {
-			return errors.Wrapf(err, "unable to load certificate '%s' and key '%s'", b.CertPath, b.KeyPath)
+			return fmt.Errorf("unable to load certificate '%s' and key '%s': %w", b.CertPath, b.KeyPath, err)
 		}
 
 		client = &http.Client{}
@@ -135,7 +148,7 @@ func (b *LiveBouncer) Init() error {
 
 	b.APIClient, err = apiclient.NewDefaultClient(apiURL, "v1", b.UserAgent, client)
 	if err != nil {
-		return errors.Wrapf(err, "api client init")
+		return fmt.Errorf("api client init: %w", err)
 	}
 
 	return nil
