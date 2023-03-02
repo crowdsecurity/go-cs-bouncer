@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
@@ -82,7 +81,7 @@ func (b *LiveBouncer) Init() error {
 
 	if b.CAPath != "" {
 		log.Infof("Using CA cert '%s'", b.CAPath)
-		caCert, err := ioutil.ReadFile(b.CAPath)
+		caCert, err := os.ReadFile(b.CAPath)
 		if err != nil {
 			return fmt.Errorf("unable to load CA certificate '%s': %w", b.CAPath, err)
 		}
