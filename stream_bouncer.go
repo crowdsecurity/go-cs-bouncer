@@ -197,7 +197,7 @@ func (b *StreamBouncer) Init() error {
 	return nil
 }
 
-func (b *StreamBouncer) Run() {
+func (b *StreamBouncer) Run(ctx context.Context) {
 	ticker := time.NewTicker(b.TickerIntervalDuration)
 
 	b.Opts.Startup = true
@@ -218,24 +218,32 @@ func (b *StreamBouncer) Run() {
 	}
 
 	if err != nil {
-		log.Errorf(err.Error())
+		log.Error(err)
+		// close the stream
+		// this may cause the bouncer to exit
+		close(b.Stream)
 		return
 	}
 
 	b.Stream <- data
 	b.Opts.Startup = false
-	for range ticker.C {
-		data, resp, err := getDecisionStream()
-		if err != nil {
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+			data, resp, err := getDecisionStream()
+			if err != nil {
+				if resp != nil && resp.Response != nil {
+					resp.Response.Body.Close()
+				}
+				log.Errorf(err.Error())
+				continue
+			}
 			if resp != nil && resp.Response != nil {
 				resp.Response.Body.Close()
 			}
-			log.Errorf(err.Error())
-			continue
+			b.Stream <- data
 		}
-		if resp != nil && resp.Response != nil {
-			resp.Response.Body.Close()
-		}
-		b.Stream <- data
 	}
 }

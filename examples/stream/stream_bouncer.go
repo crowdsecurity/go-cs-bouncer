@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 
@@ -26,10 +27,16 @@ func main() {
 	}
 
 	if err := bouncer.Init(); err != nil {
-		log.Fatalf(err.Error())
+		log.Fatal(err)
 	}
 
-	go bouncer.Run()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	go func() {
+		bouncer.Run(ctx)
+		cancel()
+	}()
 
 	for streamDecision := range bouncer.Stream {
 		for _, decision := range streamDecision.Deleted {

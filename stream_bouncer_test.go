@@ -1,6 +1,7 @@
 package csbouncer_test
 
 import (
+	"context"
 	"fmt"
 	"log"
 
@@ -17,7 +18,13 @@ func ExampleStreamBouncer() {
 		log.Fatalf(err.Error())
 	}
 
-	go bouncer.Run()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	go func() {
+		bouncer.Run(ctx)
+		cancel()
+	}()
 
 	for streamDecision := range bouncer.Stream {
 		for _, decision := range streamDecision.Deleted {
@@ -43,7 +50,13 @@ func ExampleStreamBouncer_Config() {
 		log.Fatalf(err.Error())
 	}
 
-	go bouncer.Run()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	go func() {
+		bouncer.Run(ctx)
+		cancel()
+	}()
 
 	for streamDecision := range bouncer.Stream {
 		for _, decision := range streamDecision.Deleted {
