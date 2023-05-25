@@ -47,6 +47,7 @@ func (b *LiveBouncer) ConfigReader(configReader io.Reader) error {
 	if err != nil {
 		return fmt.Errorf("unable to read configuration: %w", err)
 	}
+
 	err = yaml.Unmarshal(content, b)
 	if err != nil {
 		return fmt.Errorf("unable to unmarshal configuration: %w", err)
@@ -55,9 +56,11 @@ func (b *LiveBouncer) ConfigReader(configReader io.Reader) error {
 	if b.APIUrl == "" {
 		return fmt.Errorf("config does not contain LAPI url")
 	}
+
 	if !strings.HasSuffix(b.APIUrl, "/") {
 		b.APIUrl += "/"
 	}
+
 	if b.APIKey == "" && b.CertPath == "" && b.KeyPath == "" {
 		return fmt.Errorf("config does not contain LAPI key or certificate")
 	}
@@ -85,7 +88,13 @@ func (b *LiveBouncer) Init() error {
 		if err != nil {
 			return fmt.Errorf("unable to load CA certificate '%s': %w", b.CAPath, err)
 		}
-		caCertPool = x509.NewCertPool()
+		caCertPool, err = x509.SystemCertPool()
+		if err != nil {
+			return fmt.Errorf("unable to load system CA certificates: %w", err)
+		}
+		if caCertPool == nil {
+			caCertPool = x509.NewCertPool()
+		}
 		caCertPool.AppendCertsFromPEM(caCert)
 	} else {
 		caCertPool = nil
@@ -95,7 +104,6 @@ func (b *LiveBouncer) Init() error {
 		InsecureSkipVerify = false
 	} else {
 		InsecureSkipVerify = *b.InsecureSkipVerify
-
 	}
 
 	if b.APIKey != "" {
@@ -115,7 +123,6 @@ func (b *LiveBouncer) Init() error {
 			transport = &apiclient.APIKeyTransport{
 				APIKey: b.APIKey,
 			}
-
 		}
 		client = transport.Client()
 		ok = true
