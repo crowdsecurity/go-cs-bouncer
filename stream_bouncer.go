@@ -133,7 +133,13 @@ func (b *StreamBouncer) Init() error {
 		if err != nil {
 			return fmt.Errorf("unable to load CA certificate '%s': %w", b.CAPath, err)
 		}
-		caCertPool = x509.NewCertPool()
+		caCertPool, err = x509.SystemCertPool()
+		if err != nil {
+			return fmt.Errorf("unable to load system CA certificates: %w", err)
+		}
+		if caCertPool == nil {
+			caCertPool = x509.NewCertPool()
+		}
 		caCertPool.AppendCertsFromPEM(caCert)
 	} else {
 		caCertPool = nil
