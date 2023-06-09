@@ -94,11 +94,22 @@ func (b *StreamBouncer) ConfigReader(configReader io.Reader) error {
 	if b.APIUrl == "" {
 		return fmt.Errorf("config does not contain LAPI url")
 	}
+
 	if !strings.HasSuffix(b.APIUrl, "/") {
 		b.APIUrl += "/"
 	}
+
 	if b.APIKey == "" && b.CertPath == "" && b.KeyPath == "" {
 		return fmt.Errorf("config does not contain LAPI key or certificate")
+	}
+
+	if b.TickerInterval == "" {
+		return fmt.Errorf("update_frequency is required")
+	}
+
+	b.TickerIntervalDuration, err = time.ParseDuration(b.TickerInterval)
+	if err != nil {
+		return fmt.Errorf("unable to parse update_frequency '%s': %w", b.TickerInterval, err)
 	}
 
 	return nil
@@ -196,10 +207,6 @@ func (b *StreamBouncer) Init() error {
 		return fmt.Errorf("api client init: %w", err)
 	}
 
-	b.TickerIntervalDuration, err = time.ParseDuration(b.TickerInterval)
-	if err != nil {
-		return fmt.Errorf("unable to parse duration '%s': %w", b.TickerInterval, err)
-	}
 	return nil
 }
 
