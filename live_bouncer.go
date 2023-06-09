@@ -48,6 +48,14 @@ func (b *LiveBouncer) ConfigReader(configReader io.Reader) error {
 		return fmt.Errorf("unable to unmarshal config file: %w", err)
 	}
 
+	return nil
+}
+
+func (b *LiveBouncer) Init() error {
+	var err error
+
+	// validate the configuration
+
 	if b.APIUrl == "" {
 		return fmt.Errorf("config does not contain LAPI url")
 	}
@@ -59,12 +67,6 @@ func (b *LiveBouncer) ConfigReader(configReader io.Reader) error {
 	if b.APIKey == "" && b.CertPath == "" && b.KeyPath == "" {
 		return fmt.Errorf("config does not contain LAPI key or certificate")
 	}
-
-	return nil
-}
-
-func (b *LiveBouncer) Init() error {
-	var err error
 
 	b.APIClient, err = getApiClient(b.APIUrl, b.UserAgent, b.APIKey, b.CAPath, b.CertPath, b.KeyPath, b.InsecureSkipVerify, log.StandardLogger())
 	if err != nil {
