@@ -71,6 +71,28 @@ func (b *StreamBouncer) ConfigReader(configReader io.Reader) error {
 		return fmt.Errorf("unable to unmarshal config file: %w", err)
 	}
 
+	return nil
+}
+
+func (b *StreamBouncer) Init() error {
+	var err error
+
+	// validate the configuration
+
+	if b.APIUrl == "" {
+		return fmt.Errorf("config does not contain LAPI url")
+	}
+
+	if !strings.HasSuffix(b.APIUrl, "/") {
+		b.APIUrl += "/"
+	}
+
+	if b.APIKey == "" && b.CertPath == "" && b.KeyPath == "" {
+		return fmt.Errorf("config does not contain LAPI key or certificate")
+	}
+
+	//  scopes, origins, etc.
+
 	if b.Scopes != nil {
 		b.Opts.Scopes = strings.Join(b.Scopes, ",")
 	}
@@ -87,32 +109,23 @@ func (b *StreamBouncer) ConfigReader(configReader io.Reader) error {
 		b.Opts.Origins = strings.Join(b.Origins, ",")
 	}
 
-	if b.APIUrl == "" {
-		return fmt.Errorf("config does not contain LAPI url")
-	}
-
-	if !strings.HasSuffix(b.APIUrl, "/") {
-		b.APIUrl += "/"
-	}
-
-	if b.APIKey == "" && b.CertPath == "" && b.KeyPath == "" {
-		return fmt.Errorf("config does not contain LAPI key or certificate")
-	}
+	// update_frequency or however it's called in the .yaml of the specific bouncer
 
 	if b.TickerInterval == "" {
-		return fmt.Errorf("update_frequency is required")
+		log.Warningf("lapi update interval is not defined, using default value of 10s")
+		b.TickerInterval = "10s"
 	}
 
 	b.TickerIntervalDuration, err = time.ParseDuration(b.TickerInterval)
 	if err != nil {
-		return fmt.Errorf("unable to parse update_frequency '%s': %w", b.TickerInterval, err)
+		return fmt.Errorf("unable to parse lapi update interval '%s': %w", b.TickerInterval, err)
 	}
 
-	return nil
-}
+	if b.TickerIntervalDuration <= 0 {
+		return fmt.Errorf("lapi update interval must be positive")
+	}
 
-func (b *StreamBouncer) Init() error {
-	var err error
+	// prepare the client object for the lapi
 
 	b.Stream = make(chan *models.DecisionsStreamResponse)
 
