@@ -20,7 +20,7 @@ type LiveBouncer struct {
 	InsecureSkipVerify *bool  `yaml:"insecure_skip_verify"`
 	CertPath           string `yaml:"cert_path"`
 	KeyPath            string `yaml:"key_path"`
-	CAPath             string `yaml:"ca_path"`
+	CAPath             string `yaml:"ca_cert_path"`
 
 	APIClient *apiclient.ApiClient
 	UserAgent string
