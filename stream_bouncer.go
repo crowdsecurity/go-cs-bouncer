@@ -29,12 +29,13 @@ var TotalLAPICalls prometheus.Counter = prometheus.NewCounter(prometheus.Counter
 )
 
 type StreamBouncer struct {
-	APIKey             string `yaml:"api_key"`
-	APIUrl             string `yaml:"api_url"`
-	InsecureSkipVerify *bool  `yaml:"insecure_skip_verify"`
-	CertPath           string `yaml:"cert_path"`
-	KeyPath            string `yaml:"key_path"`
-	CAPath             string `yaml:"ca_cert_path"`
+	APIKey              string `yaml:"api_key"`
+	APIUrl              string `yaml:"api_url"`
+	InsecureSkipVerify  *bool  `yaml:"insecure_skip_verify"`
+	CertPath            string `yaml:"cert_path"`
+	KeyPath             string `yaml:"key_path"`
+	CAPath              string `yaml:"ca_cert_path"`
+	RetryInitialConnect bool   `yaml:"retry_initial_connect"`
 
 	TickerInterval         string   `yaml:"update_frequency"`
 	Scopes                 []string `yaml:"scopes"`
@@ -150,21 +151,32 @@ func (b *StreamBouncer) Run(ctx context.Context) {
 		return data, resp, err
 	}
 
-	data, resp, err := getDecisionStream()
+	// Initial connection
+	for {
+		data, resp, err := getDecisionStream()
 
-	if resp != nil && resp.Response != nil {
-		resp.Response.Body.Close()
+		if resp != nil && resp.Response != nil {
+			resp.Response.Body.Close()
+		}
+
+		if err != nil {
+			if b.RetryInitialConnect {
+				log.Errorf("failed to connect to LAPI, retrying in 10s: %s", err)
+				time.Sleep(10 * time.Second)
+				continue
+			}
+
+			log.Error(err)
+			// close the stream
+			// this may cause the bouncer to exit
+			close(b.Stream)
+			return
+		}
+
+		b.Stream <- data
+		break
 	}
 
-	if err != nil {
-		log.Error(err)
-		// close the stream
-		// this may cause the bouncer to exit
-		close(b.Stream)
-		return
-	}
-
-	b.Stream <- data
 	b.Opts.Startup = false
 	for {
 		select {
@@ -172,15 +184,12 @@ func (b *StreamBouncer) Run(ctx context.Context) {
 			return
 		case <-ticker.C:
 			data, resp, err := getDecisionStream()
-			if err != nil {
-				if resp != nil && resp.Response != nil {
-					resp.Response.Body.Close()
-				}
-				log.Errorf(err.Error())
-				continue
-			}
 			if resp != nil && resp.Response != nil {
 				resp.Response.Body.Close()
+			}
+			if err != nil {
+				log.Error(err)
+				continue
 			}
 			b.Stream <- data
 		}
