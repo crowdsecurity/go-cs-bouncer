@@ -18,10 +18,12 @@ func ExampleLiveBouncer() {
 	}
 
 	ipToQuery := "1.2.3.4"
+
 	response, err := bouncer.Get(ipToQuery)
 	if err != nil {
 		log.Fatalf("unable to get decision for ip '%s' : '%s'", ipToQuery, err)
 	}
+
 	if len(*response) == 0 {
 		log.Printf("no decision for '%s'", ipToQuery)
 	}
@@ -39,15 +41,17 @@ func ExampleLiveBouncer_Config() {
 		log.Fatal(err)
 	}
 
-	if err := bouncer.Init(); err != nil {
+	if err = bouncer.Init(); err != nil {
 		log.Fatalf(err.Error())
 	}
 
 	ipToQuery := "1.2.3.4"
+
 	response, err := bouncer.Get(ipToQuery)
 	if err != nil {
 		log.Fatalf("unable to get decision for ip '%s' : '%s'", ipToQuery, err)
 	}
+
 	if len(*response) == 0 {
 		log.Printf("no decision for '%s'", ipToQuery)
 	}

@@ -2,7 +2,6 @@ package csbouncer
 
 import (
 	"crypto/tls"
-	"crypto/x509"
 	"errors"
 	"fmt"
 	"net/http"
@@ -13,11 +12,8 @@ import (
 	"github.com/crowdsecurity/crowdsec/pkg/apiclient"
 )
 
-func getApiClient(urlstr string, userAgent string, apiKey string, caPath string, certPath string, keyPath string, skipVerify *bool, logger logrus.FieldLogger) (*apiclient.ApiClient, error) {
-	var (
-		caCertPool *x509.CertPool
-		client     *http.Client
-	)
+func getAPIClient(urlstr string, userAgent string, apiKey string, caPath string, certPath string, keyPath string, skipVerify *bool, logger logrus.FieldLogger) (*apiclient.ApiClient, error) {
+	var client *http.Client
 
 	if apiKey == "" && certPath == "" && keyPath == "" {
 		return nil, errors.New("no API key nor certificate provided")
@@ -38,7 +34,7 @@ func getApiClient(urlstr string, userAgent string, apiKey string, caPath string,
 		insecureSkipVerify = true
 	}
 
-	caCertPool, err = getCertPool(caPath, logger)
+	caCertPool, err := getCertPool(caPath, logger)
 	if err != nil {
 		return nil, err
 	}
@@ -65,10 +61,9 @@ func getApiClient(urlstr string, userAgent string, apiKey string, caPath string,
 	}
 
 	if certPath != "" && keyPath != "" {
-		var certificate tls.Certificate
-
 		logger.Infof("Using cert auth with cert '%s' and key '%s'", certPath, keyPath)
-		certificate, err = tls.LoadX509KeyPair(certPath, keyPath)
+
+		certificate, err := tls.LoadX509KeyPair(certPath, keyPath)
 		if err != nil {
 			return nil, fmt.Errorf("unable to load certificate '%s' and key '%s': %w", certPath, keyPath, err)
 		}

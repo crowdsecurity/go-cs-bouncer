@@ -37,7 +37,6 @@ func ExampleStreamBouncer() {
 }
 
 func ExampleStreamBouncer_Config() {
-
 	bouncer := &csbouncer.StreamBouncer{}
 
 	err := bouncer.Config("./config.yaml")

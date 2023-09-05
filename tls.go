@@ -28,6 +28,8 @@ func getCertPool(caPath string, logger logrus.FieldLogger) (*x509.CertPool, erro
 	if cp == nil {
 		cp = x509.NewCertPool()
 	}
+
 	cp.AppendCertsFromPEM(caCert)
+
 	return cp, nil
 }
