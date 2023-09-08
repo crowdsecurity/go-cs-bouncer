@@ -23,6 +23,10 @@ func getApiClient(urlstr string, userAgent string, apiKey string, caPath string,
 		return nil, errors.New("no API key nor certificate provided")
 	}
 
+	if apiKey != "" && (certPath != "" || keyPath != "") {
+		return nil, fmt.Errorf("cannot use both API key and certificate auth")
+	}
+
 	insecureSkipVerify := false
 
 	apiURL, err := url.Parse(urlstr)
