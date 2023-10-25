@@ -68,7 +68,7 @@ func (b *LiveBouncer) Init() error {
 		return fmt.Errorf("config does not contain LAPI key or certificate")
 	}
 
-	b.APIClient, err = getApiClient(b.APIUrl, b.UserAgent, b.APIKey, b.CAPath, b.CertPath, b.KeyPath, b.InsecureSkipVerify, log.StandardLogger())
+	b.APIClient, err = getAPIClient(b.APIUrl, b.UserAgent, b.APIKey, b.CAPath, b.CertPath, b.KeyPath, b.InsecureSkipVerify, log.StandardLogger())
 	if err != nil {
 		return fmt.Errorf("api client init: %w", err)
 	}
@@ -87,6 +87,7 @@ func (b *LiveBouncer) Get(value string) (*models.GetDecisionsResponse, error) {
 		}
 		return &models.GetDecisionsResponse{}, err
 	}
+
 	if resp != nil && resp.Response != nil {
 		resp.Response.Body.Close()
 	}

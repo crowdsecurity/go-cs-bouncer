@@ -16,17 +16,15 @@ import (
 	"github.com/crowdsecurity/crowdsec/pkg/models"
 )
 
-var TotalLAPIError prometheus.Counter = prometheus.NewCounter(prometheus.CounterOpts{
+var TotalLAPIError = prometheus.NewCounter(prometheus.CounterOpts{
 	Name: "lapi_requests_failures_total",
 	Help: "The total number of failed calls to CrowdSec LAPI",
-},
-)
+})
 
-var TotalLAPICalls prometheus.Counter = prometheus.NewCounter(prometheus.CounterOpts{
+var TotalLAPICalls = prometheus.NewCounter(prometheus.CounterOpts{
 	Name: "lapi_requests_total",
 	Help: "The total number of calls to CrowdSec LAPI",
-},
-)
+})
 
 type StreamBouncer struct {
 	APIKey              string `yaml:"api_key"`
@@ -130,7 +128,7 @@ func (b *StreamBouncer) Init() error {
 
 	b.Stream = make(chan *models.DecisionsStreamResponse)
 
-	b.APIClient, err = getApiClient(b.APIUrl, b.UserAgent, b.APIKey, b.CAPath, b.CertPath, b.KeyPath, b.InsecureSkipVerify, log.StandardLogger())
+	b.APIClient, err = getAPIClient(b.APIUrl, b.UserAgent, b.APIKey, b.CAPath, b.CertPath, b.KeyPath, b.InsecureSkipVerify, log.StandardLogger())
 	if err != nil {
 		return fmt.Errorf("api client init: %w", err)
 	}
