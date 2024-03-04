@@ -12,6 +12,8 @@ import (
 
 	"github.com/crowdsecurity/crowdsec/pkg/apiclient"
 	"github.com/crowdsecurity/crowdsec/pkg/models"
+
+	"github.com/crowdsecurity/go-cs-lib/csstring"
 )
 
 type LiveBouncer struct {
@@ -43,7 +45,9 @@ func (b *LiveBouncer) ConfigReader(configReader io.Reader) error {
 		return fmt.Errorf("unable to read configuration: %w", err)
 	}
 
-	err = yaml.Unmarshal(content, b)
+	data := csstring.StrictExpand(string(content), os.LookupEnv)
+
+	err = yaml.Unmarshal([]byte(data), b)
 	if err != nil {
 		return fmt.Errorf("unable to unmarshal config file: %w", err)
 	}
