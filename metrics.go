@@ -22,21 +22,25 @@ const (
 	defaultMetricsInterval = 30 * time.Minute
 )
 
-func GetMetricsInterval(interval *time.Duration, logger *logrus.Entry) time.Duration {
+func SetMetricsInterval(interval *time.Duration, logger *logrus.Entry) *time.Duration {
+	var ret time.Duration
+
 	switch {
 	case interval == nil:
-		logger.Tracef("metrics_interval is not set, default to %s", defaultMetricsInterval)
-		return defaultMetricsInterval
+		ret = defaultMetricsInterval
+		logger.Tracef("metrics_interval is not set, default to %s", ret)
 	case *interval == time.Duration(0):
+		ret = 0
 		logger.Info("metrics_interval is set to 0, disabling metrics")
-		return 0
 	case *interval < minimumMetricsInterval:
-		logger.Warnf("metrics_interval is too low, setting it to %s", minimumMetricsInterval)
-		return minimumMetricsInterval
+		ret = minimumMetricsInterval
+		logger.Warnf("metrics_interval is too low, setting it to %s", ret)
+	default:
+		ret = *interval
+		logger.Tracef("metrics_interval set to %s", ret)
 	}
 
-	logger.Tracef("metrics_interval set to %s", interval)
-	return *interval
+	return &ret
 }
 
 func detectOS() (string, string) {
