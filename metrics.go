@@ -22,22 +22,22 @@ const (
 	defaultMetricsInterval = 30 * time.Minute
 )
 
-func SetMetricsInterval(interval *time.Duration, logger *logrus.Entry) *time.Duration {
+func SetMetricsInterval(interval *time.Duration, logger logrus.FieldLogger) *time.Duration {
 	var ret time.Duration
 
 	switch {
 	case interval == nil:
 		ret = defaultMetricsInterval
-		logger.Tracef("metrics_interval is not set, default to %s", ret)
+		logger.Debugf("metrics_interval is not set, default to %s", ret)
 	case *interval == time.Duration(0):
 		ret = 0
 		logger.Info("metrics_interval is set to 0, disabling metrics")
 	case *interval < minimumMetricsInterval:
 		ret = minimumMetricsInterval
-		logger.Warnf("metrics_interval is too low, setting it to %s", ret)
+		logger.Warnf("metrics_interval is too low (%s), setting it to %s", *interval, ret)
 	default:
 		ret = *interval
-		logger.Tracef("metrics_interval set to %s", ret)
+		logger.Debugf("metrics_interval set to %s", ret)
 	}
 
 	return &ret
@@ -61,7 +61,7 @@ type MetricsProvider struct {
 	Interval  time.Duration
 	static    staticMetrics
 	updater   MetricsUpdater
-	logger    *logrus.Entry
+	logger    logrus.FieldLogger
 }
 
 type staticMetrics struct {
@@ -85,7 +85,7 @@ func newStaticMetrics(bouncerType string) staticMetrics {
 	}
 }
 
-func NewMetricsProvider(client *apiclient.ApiClient, bouncerType string, interval time.Duration, updater MetricsUpdater, logger *logrus.Entry) (*MetricsProvider, error) {
+func NewMetricsProvider(client *apiclient.ApiClient, bouncerType string, interval time.Duration, updater MetricsUpdater, logger logrus.FieldLogger) (*MetricsProvider, error) {
 	return &MetricsProvider{
 		APIClient: client,
 		Interval: interval,
@@ -144,8 +144,6 @@ func (m *MetricsProvider) Run(ctx context.Context) error {
 
 	ticker := time.NewTicker(m.Interval)
 
-	m.logger.Tracef("sending usage metrics every %s", m.Interval)
-
 	for {
 		select {
 		case <-ctx.Done():
@@ -171,7 +169,7 @@ func (m *MetricsProvider) Run(ctx context.Context) error {
 				continue
 			}
 
-			m.logger.Tracef("usage metrics sent")
+			m.logger.Debugf("usage metrics sent")
 		}
 	}
 }
