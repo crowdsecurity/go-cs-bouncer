@@ -15,7 +15,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Hello World!")
 }
 
-func appsecMiddleware(appsec csbouncer.AppSec, next http.HandlerFunc) http.HandlerFunc {
+func appsecMiddleware(appsec *csbouncer.AppSec, next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		appsecRes, err := appsec.Forward(r)
 		if err != nil {
@@ -38,7 +38,7 @@ func appsecMiddleware(appsec csbouncer.AppSec, next http.HandlerFunc) http.Handl
 }
 
 func main() {
-	appsec := csbouncer.AppSec{}
+	appsec := &csbouncer.AppSec{}
 	err := appsec.Config("./config.yaml")
 	if err != nil {
 		fmt.Println(err)
