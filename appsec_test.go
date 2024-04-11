@@ -84,8 +84,12 @@ appsec_config:
 		t.Run(test.name, func(t *testing.T) {
 			tt := &csbouncer.AppSec{}
 			r := strings.NewReader(test.yaml)
-			tt.ConfigReader(r)
-			tt.Init()
+			if err := tt.ConfigReader(r); err != nil {
+				t.Errorf("unexpected error: %s", err)
+			}
+			if err := tt.Init(); err != nil {
+				t.Errorf("unexpected error: %s", err)
+			}
 			if tt.APIKey != test.expected.APIKey {
 				t.Errorf("expected %s, got %s", test.expected.APIKey, tt.APIKey)
 			}
@@ -120,7 +124,9 @@ func TestWafParseClientReq(t *testing.T) {
 			Url: "http://localhost:7422/",
 		},
 	}
-	appsec.Init()
+	if err := appsec.Init(); err != nil {
+		t.Errorf("unexpected error: %s", err)
+	}
 	var tests = []struct {
 		name    string
 		request *http.Request
