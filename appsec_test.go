@@ -65,6 +65,18 @@ appsec_config:
     tls_handshake_timeout: 10
     response_header_timeout: 15`,
 		},
+		{
+			name: "Test timeout values",
+			expected: csbouncer.AppSec{
+				APIKey: "test",
+				AppSecConfig: &csbouncer.AppSecConfig{
+					Url: "/run/appsec.sock",
+				},
+			},
+			yaml: `api_key: test
+appsec_config:
+  url: /run/appsec.sock`,
+		},
 	}
 
 	for _, test := range tests {
@@ -110,10 +122,9 @@ func TestWafParseClientReq(t *testing.T) {
 	}
 	appsec.Init()
 	var tests = []struct {
-		name     string
-		request  *http.Request
-		IP       string
-		expected *http.Request
+		name    string
+		request *http.Request
+		IP      string
 	}{
 		{
 			name: "Test simple request",
@@ -149,7 +160,6 @@ func TestWafParseClientReq(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		test := test
 		t.Run(test.name, func(t *testing.T) {
 			req, err := appsec.ParseClientReq(test.request, test.IP)
 			if err != nil {
@@ -181,6 +191,34 @@ func TestWafParseClientReq(t *testing.T) {
 			if req.Header.Get("X-Crowdsec-Appsec-Uri") != test.request.URL.String() {
 				t.Errorf("expected %s, got %s", test.request.URL.String(), req.Header.Get("X-Crowdsec-Appsec-Uri"))
 			}
+
+			// Check the host matches the host of the original request
+			if req.Header.Get("X-Crowdsec-Appsec-Host") != test.request.Host {
+				t.Errorf("expected %s, got %s", test.request.Host, req.Header.Get("X-Crowdsec-Appsec-Host"))
+			}
+
+			// Check the verb matches the method of the original request
+			if req.Header.Get("X-Crowdsec-Appsec-Verb") != test.request.Method {
+				t.Errorf("expected %s, got %s", test.request.Method, req.Header.Get("X-Crowdsec-Appsec-Verb"))
+			}
+
+			// Check the user agent matches the user agent of the original request
+			if req.Header.Get("X-Crowdsec-Appsec-User-Agent") != test.request.Header.Get("User-Agent") {
+				t.Errorf("expected %s, got %s", test.request.Header.Get("User-Agent"), req.Header.Get("X-Crowdsec-Appsec-User-Agent"))
+			}
+
+			if test.IP != "" {
+				// Check the overridden IP address matches the IP address of the original request
+				if req.Header.Get("X-Crowdsec-Appsec-Ip") != test.IP {
+					t.Errorf("expected %s, got %s", test.IP, req.Header.Get("X-Crowdsec-Appsec-Ip"))
+				}
+			} else {
+				// Check the IP address matches the IP address of the original request
+				if req.Header.Get("X-Crowdsec-Appsec-Ip") != test.request.RemoteAddr {
+					t.Errorf("expected %s, got %s", test.request.RemoteAddr, req.Header.Get("X-Crowdsec-Appsec-Ip"))
+				}
+			}
+
 		})
 	}
 }

@@ -2,6 +2,7 @@ package csbouncer
 
 import (
 	"bytes"
+	"context"
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
@@ -10,6 +11,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strings"
 	"time"
 
 	"gopkg.in/yaml.v2"
@@ -64,7 +66,7 @@ type AppSec struct {
 }
 
 type AppSecResponse struct {
-	_response  *http.Response
+	Response   *http.Response
 	Action     string `json:"action"`
 	HTTPStatus int    `json:"http_status"`
 }
@@ -117,11 +119,21 @@ func (w *AppSec) Init() error {
 		return err
 	}
 
+	dialContext := (&net.Dialer{
+		Timeout: time.Duration(*w.AppSecConfig.Timeout.ConnectTimeout) * time.Second,
+	}).DialContext
+
+	if w.AppSecConfig.ParsedUrl.Scheme == "unix" || strings.HasPrefix(w.AppSecConfig.ParsedUrl.String(), "/") {
+		dialContext = func(ctx context.Context, network, addr string) (net.Conn, error) {
+			return net.Dial("unix", strings.TrimSuffix(w.AppSecConfig.ParsedUrl.Path, "/"))
+		}
+		w.AppSecConfig.ParsedUrl.Host = "unix"
+		w.AppSecConfig.ParsedUrl.Scheme = "http"
+	}
+
 	w.Client = &http.Client{
 		Transport: &http.Transport{
-			DialContext: (&net.Dialer{
-				Timeout: time.Duration(*w.AppSecConfig.Timeout.ConnectTimeout) * time.Second,
-			}).DialContext,
+			DialContext: dialContext,
 			TLSClientConfig: &tls.Config{
 				InsecureSkipVerify: *w.AppSecConfig.InsecureSkipVerify,
 				RootCAs:            caCertPool,
@@ -139,6 +151,7 @@ func (w *AppSec) Init() error {
 // This function should not be used directly, use Forward() instead.
 func (w *AppSec) ParseClientReq(clientReq *http.Request, ipOverride string) (*http.Request, error) {
 	var req *http.Request
+
 	if clientReq.Body != nil && clientReq.ContentLength > 0 {
 		bodyBytes, err := io.ReadAll(clientReq.Body)
 		if err != nil {
@@ -174,12 +187,13 @@ func (w *AppSec) ParseClientReq(clientReq *http.Request, ipOverride string) (*ht
 // Internal forward function that sends the request to the AppSec and returns the response.
 func (w *AppSec) forward(req *http.Request) (*AppSecResponse, error) {
 	res, err := w.Client.Do(req)
+
 	if err != nil {
-		return &AppSecResponse{_response: res}, fmt.Errorf("appsecQuery %w", err)
+		return &AppSecResponse{Response: res}, fmt.Errorf("appsecQuery %w", err)
 	}
 	defer res.Body.Close()
 
-	wr := &AppSecResponse{_response: res}
+	wr := &AppSecResponse{Response: res}
 
 	if res.StatusCode == http.StatusInternalServerError {
 		return wr, fmt.Errorf("appsecQuery: unexpected status code %d", res.StatusCode)
