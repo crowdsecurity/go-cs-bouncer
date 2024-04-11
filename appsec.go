@@ -199,7 +199,9 @@ func (w *AppSec) forward(req *http.Request) (*AppSecResponse, error) {
 		return wr, fmt.Errorf("appsecQuery: unexpected status code %d", res.StatusCode)
 	}
 
-	json.NewDecoder(res.Body).Decode(wr)
+	if err := json.NewDecoder(res.Body).Decode(wr); err != nil {
+		return wr, fmt.Errorf("appsecQuery %w", err)
+	}
 
 	return wr, nil
 }

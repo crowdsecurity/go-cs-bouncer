@@ -80,7 +80,9 @@ appsec_config:
 	}
 
 	for _, test := range tests {
-		test.expected.Init()
+		if err := test.expected.Init(); err != nil {
+			t.Errorf("unexpected error: %s", err)
+		}
 		t.Run(test.name, func(t *testing.T) {
 			tt := &csbouncer.AppSec{}
 			r := strings.NewReader(test.yaml)
