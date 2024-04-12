@@ -149,7 +149,7 @@ func (w *AppSec) Init() error {
 // ParseClientReq parses the client request and returns a new request that is ready to be forwarded to the AppSec.
 // You can override the IP address with the ipOverride parameter.
 // This function should not be used directly, use Forward() instead.
-func (w *AppSec) ParseClientReq(clientReq *http.Request, ipOverride string) (*http.Request, error) {
+func (w *AppSec) ParseClientReq(ctx context.Context, clientReq *http.Request, ipOverride string) (*http.Request, error) {
 	var req *http.Request
 
 	if clientReq.Body != nil && clientReq.ContentLength > 0 {
@@ -158,9 +158,9 @@ func (w *AppSec) ParseClientReq(clientReq *http.Request, ipOverride string) (*ht
 			return nil, err
 		}
 		clientReq.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
-		req, _ = http.NewRequest(http.MethodPost, w.AppSecConfig.ParsedUrl.String(), bytes.NewBuffer(bodyBytes))
+		req, _ = http.NewRequestWithContext(ctx, http.MethodPost, w.AppSecConfig.ParsedUrl.String(), bytes.NewBuffer(bodyBytes))
 	} else {
-		req, _ = http.NewRequest(http.MethodGet, w.AppSecConfig.ParsedUrl.String(), nil)
+		req, _ = http.NewRequestWithContext(ctx, http.MethodGet, w.AppSecConfig.ParsedUrl.String(), nil)
 	}
 
 	for key, headers := range clientReq.Header {
@@ -206,11 +206,38 @@ func (w *AppSec) forward(req *http.Request) (*AppSecResponse, error) {
 	return wr, nil
 }
 
+// ForwardCTXWithIP forwards the request to the AppSec and returns the response.
+// You can override the IP address with the IP parameter.
+// You do not need to parse the client request, just pass it as an argument.
+// You can pass a context as the first argument. This is useful if you want to cancel the request.
+func (w *AppSec) ForwardCTXWithIP(ctx context.Context, clientReq *http.Request, IP string) (*AppSecResponse, error) {
+	req, err := w.ParseClientReq(ctx, clientReq, IP)
+
+	if err != nil {
+		return nil, fmt.Errorf("appsecQuery %w", err)
+	}
+
+	return w.forward(req)
+}
+
 // ForwardWithIP forwards the request to the AppSec and returns the response.
 // You can override the IP address with the IP parameter.
 // You do not need to parse the client request, just pass it as an argument.
 func (w *AppSec) ForwardWithIP(clientReq *http.Request, IP string) (*AppSecResponse, error) {
-	req, err := w.ParseClientReq(clientReq, IP)
+	req, err := w.ParseClientReq(context.Background(), clientReq, IP)
+
+	if err != nil {
+		return nil, fmt.Errorf("appsecQuery %w", err)
+	}
+
+	return w.forward(req)
+}
+
+// ForwardCTX forwards the request to the AppSec and returns the response.
+// You do not need to parse the client request, just pass it as an argument.
+// You can pass a context as the first argument. This is useful if you want to cancel the request.
+func (w *AppSec) ForwardCTX(ctx context.Context, clientReq *http.Request) (*AppSecResponse, error) {
+	req, err := w.ParseClientReq(ctx, clientReq, "")
 
 	if err != nil {
 		return nil, fmt.Errorf("appsecQuery %w", err)
@@ -222,7 +249,7 @@ func (w *AppSec) ForwardWithIP(clientReq *http.Request, IP string) (*AppSecRespo
 // Forward forwards the request to the AppSec and returns the response.
 // You do not need to parse the client request, just pass it as an argument.
 func (w *AppSec) Forward(clientReq *http.Request) (*AppSecResponse, error) {
-	req, err := w.ParseClientReq(clientReq, "")
+	req, err := w.ParseClientReq(context.Background(), clientReq, "")
 
 	if err != nil {
 		return nil, fmt.Errorf("appsecQuery %w", err)

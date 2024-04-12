@@ -1,6 +1,7 @@
 package csbouncer_test
 
 import (
+	"context"
 	"net/http"
 	"net/url"
 	"strings"
@@ -169,7 +170,7 @@ func TestWafParseClientReq(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			req, err := appsec.ParseClientReq(test.request, test.IP)
+			req, err := appsec.ParseClientReq(context.Background(), test.request, test.IP)
 			if err != nil {
 				t.Errorf("unexpected error: %s", err)
 			}

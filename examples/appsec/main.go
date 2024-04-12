@@ -17,8 +17,6 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 func appsecMiddleware(appsec *csbouncer.AppSec, next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// do something with the request
-		fmt.Println("middleware")
 		appsecRes, err := appsec.Forward(r)
 		if err != nil {
 			fmt.Println(err)
