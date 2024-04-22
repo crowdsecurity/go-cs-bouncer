@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/blackfireio/osinfo"
 	"github.com/sirupsen/logrus"
-        "github.com/blackfireio/osinfo"
 
 	"github.com/crowdsecurity/go-cs-lib/version"
 
@@ -15,7 +15,7 @@ import (
 	"github.com/crowdsecurity/crowdsec/pkg/models"
 )
 
-type MetricsUpdater func(*models.RemediationComponentsMetricsItems0)
+type MetricsUpdater func(*models.RemediationComponentsMetrics)
 
 const (
 	minimumMetricsInterval = 15 * time.Minute
@@ -65,11 +65,11 @@ type MetricsProvider struct {
 }
 
 type staticMetrics struct {
-	osName            string
-	osVersion         string
-	startupTS         int64
-	featureFlags      []string
-	bouncerType       string
+	osName       string
+	osVersion    string
+	startupTS    int64
+	featureFlags []string
+	bouncerType  string
 }
 
 // newStaticMetrics should be called once over the lifetime of the program (more if we support hot-reload)
@@ -77,21 +77,21 @@ func newStaticMetrics(bouncerType string) staticMetrics {
 	osName, osVersion := detectOS()
 
 	return staticMetrics{
-		osName:            osName,
-		osVersion:         osVersion,
-		startupTS:         time.Now().Unix(),
-		featureFlags:      []string{},
-		bouncerType:       bouncerType,
+		osName:       osName,
+		osVersion:    osVersion,
+		startupTS:    time.Now().Unix(),
+		featureFlags: []string{},
+		bouncerType:  bouncerType,
 	}
 }
 
 func NewMetricsProvider(client *apiclient.ApiClient, bouncerType string, interval time.Duration, updater MetricsUpdater, logger logrus.FieldLogger) (*MetricsProvider, error) {
 	return &MetricsProvider{
 		APIClient: client,
-		Interval: interval,
-		updater: updater,
-		static: newStaticMetrics(bouncerType),
-		logger: logger,
+		Interval:  interval,
+		updater:   updater,
+		static:    newStaticMetrics(bouncerType),
+		logger:    logger,
 	}, nil
 }
 
@@ -99,9 +99,9 @@ func (m *MetricsProvider) metricsPayload() *models.AllMetrics {
 	now := time.Now().Unix()
 
 	meta := &models.MetricsMeta{
-		UtcNowTimestamp: now,
+		UtcNowTimestamp:     now,
 		UtcStartupTimestamp: m.static.startupTS,
-		WindowSizeSeconds: int64(m.Interval.Seconds()),
+		WindowSizeSeconds:   int64(m.Interval.Seconds()),
 	}
 
 	os := &models.OSversion{
@@ -112,15 +112,15 @@ func (m *MetricsProvider) metricsPayload() *models.AllMetrics {
 	bouncerVersion := version.String()
 
 	base := &models.BaseMetrics{
-		Meta: meta,
-		Os: os,
-		Version: &bouncerVersion,
+		Meta:         meta,
+		Os:           os,
+		Version:      &bouncerVersion,
 		FeatureFlags: m.static.featureFlags,
 	}
 
-	item0 := &models.RemediationComponentsMetricsItems0{
+	item0 := &models.RemediationComponentsMetrics{
 		BaseMetrics: *base,
-		Type: m.static.bouncerType,
+		Type:        m.static.bouncerType,
 	}
 
 	if m.updater != nil {
@@ -128,7 +128,7 @@ func (m *MetricsProvider) metricsPayload() *models.AllMetrics {
 	}
 
 	return &models.AllMetrics{
-		RemediationComponents: []models.RemediationComponentsMetrics{{item0}},
+		RemediationComponents: []*models.RemediationComponentsMetrics{item0},
 	}
 }
 

@@ -4,7 +4,7 @@ go 1.21
 
 require (
 	github.com/blackfireio/osinfo v1.0.5
-	github.com/crowdsecurity/crowdsec v1.6.1-0.20240308133748-11e105ae1a80
+	github.com/crowdsecurity/crowdsec v1.6.2-0.20240422155903-e36d2cb6b88c
 	github.com/crowdsecurity/go-cs-lib v0.0.7
 	github.com/prometheus/client_golang v1.17.0
 	github.com/sirupsen/logrus v1.9.3
@@ -40,10 +40,10 @@ require (
 	github.com/prometheus/common v0.45.0 // indirect
 	github.com/prometheus/procfs v0.12.0 // indirect
 	go.mongodb.org/mongo-driver v1.12.1 // indirect
-	golang.org/x/net v0.19.0 // indirect
-	golang.org/x/sys v0.15.0 // indirect
+	golang.org/x/net v0.24.0 // indirect
+	golang.org/x/sys v0.19.0 // indirect
 	golang.org/x/xerrors v0.0.0-20231012003039-104605ab7028 // indirect
-	google.golang.org/protobuf v1.31.0 // indirect
+	google.golang.org/protobuf v1.33.0 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1 // indirect
 	gopkg.in/tomb.v2 v2.0.0-20161208151619-d5d1b5820637 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
