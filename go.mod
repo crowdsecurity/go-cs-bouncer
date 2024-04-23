@@ -4,7 +4,7 @@ go 1.21
 
 require (
 	github.com/blackfireio/osinfo v1.0.5
-	github.com/crowdsecurity/crowdsec v1.6.2-0.20240422155903-e36d2cb6b88c
+	github.com/crowdsecurity/crowdsec v1.6.2-0.20240423112254-12ce5e3fc14f
 	github.com/crowdsecurity/go-cs-lib v0.0.7
 	github.com/prometheus/client_golang v1.17.0
 	github.com/sirupsen/logrus v1.9.3
