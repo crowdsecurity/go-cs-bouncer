@@ -18,7 +18,7 @@ import (
 type MetricsUpdater func(*models.RemediationComponentsMetrics)
 
 const (
-	minimumMetricsInterval = 15 * time.Minute
+	minimumMetricsInterval = 1 * time.Second
 	defaultMetricsInterval = 30 * time.Minute
 )
 
@@ -96,26 +96,19 @@ func NewMetricsProvider(client *apiclient.ApiClient, bouncerType string, interva
 }
 
 func (m *MetricsProvider) metricsPayload() *models.AllMetrics {
-	now := time.Now().Unix()
-
-	meta := &models.MetricsMeta{
-		UtcNowTimestamp:     now,
-		UtcStartupTimestamp: m.static.startupTS,
-		WindowSizeSeconds:   int64(m.Interval.Seconds()),
-	}
-
 	os := &models.OSversion{
-		Name:    m.static.osName,
-		Version: m.static.osVersion,
+		Name:    &m.static.osName,
+		Version: &m.static.osVersion,
 	}
 
 	bouncerVersion := version.String()
 
 	base := &models.BaseMetrics{
-		Meta:         meta,
-		Os:           os,
-		Version:      &bouncerVersion,
-		FeatureFlags: m.static.featureFlags,
+		Os:                  os,
+		Version:             &bouncerVersion,
+		FeatureFlags:        m.static.featureFlags,
+		Metrics:             make([]*models.DetailedMetrics, 0),
+		UtcStartupTimestamp: &m.static.startupTS,
 	}
 
 	item0 := &models.RemediationComponentsMetrics{

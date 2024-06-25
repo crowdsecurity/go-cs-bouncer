@@ -1,11 +1,13 @@
 module github.com/crowdsecurity/go-cs-bouncer
 
-go 1.21
+go 1.22
+
+toolchain go1.22.2
 
 require (
 	github.com/blackfireio/osinfo v1.0.5
-	github.com/crowdsecurity/crowdsec v1.6.2-0.20240423112254-12ce5e3fc14f
-	github.com/crowdsecurity/go-cs-lib v0.0.7
+	github.com/crowdsecurity/crowdsec v1.6.3-0.20240625082021-0bfbd3e2bcd7
+	github.com/crowdsecurity/go-cs-lib v0.0.11
 	github.com/prometheus/client_golang v1.17.0
 	github.com/sirupsen/logrus v1.9.3
 	gopkg.in/yaml.v2 v2.4.0
@@ -16,7 +18,8 @@ require (
 	github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
-	github.com/fatih/color v1.15.0 // indirect
+	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/fatih/color v1.16.0 // indirect
 	github.com/go-openapi/analysis v0.21.4 // indirect
 	github.com/go-openapi/errors v0.20.4 // indirect
 	github.com/go-openapi/jsonpointer v0.20.0 // indirect
