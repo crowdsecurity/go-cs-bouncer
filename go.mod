@@ -8,7 +8,7 @@ require (
 	github.com/blackfireio/osinfo v1.0.5
 	github.com/crowdsecurity/crowdsec v1.6.3-0.20240625082021-0bfbd3e2bcd7
 	github.com/crowdsecurity/go-cs-lib v0.0.11
-	github.com/prometheus/client_golang v1.17.0
+	github.com/prometheus/client_golang v1.18.0
 	github.com/sirupsen/logrus v1.9.3
 	gopkg.in/yaml.v2 v2.4.0
 )
