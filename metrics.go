@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/blackfireio/osinfo"
 	"github.com/sirupsen/logrus"
 
 	"github.com/crowdsecurity/go-cs-lib/version"
@@ -43,19 +42,6 @@ func SetMetricsInterval(interval *time.Duration, logger logrus.FieldLogger) *tim
 	return &ret
 }
 
-func detectOS() (string, string) {
-	if version.System == "docker" {
-		return "docker", ""
-	}
-
-	osInfo, err := osinfo.GetOSInfo()
-	if err != nil {
-		return version.System, "???"
-	}
-
-	return osInfo.Name, osInfo.Version
-}
-
 type MetricsProvider struct {
 	APIClient *apiclient.ApiClient
 	Interval  time.Duration
@@ -74,7 +60,7 @@ type staticMetrics struct {
 
 // newStaticMetrics should be called once over the lifetime of the program (more if we support hot-reload)
 func newStaticMetrics(bouncerType string) staticMetrics {
-	osName, osVersion := detectOS()
+	osName, osVersion := version.DetectOS()
 
 	return staticMetrics{
 		osName:       osName,
