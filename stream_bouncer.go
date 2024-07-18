@@ -47,7 +47,7 @@ type StreamBouncer struct {
 	UserAgent              string
 	Opts                   apiclient.DecisionsStreamOpts
 
-	MetricsInterval        *time.Duration `yaml:"metrics_interval"`
+	MetricsInterval time.Duration
 }
 
 // Config() fills the struct with configuration values from a file. It is not
@@ -76,7 +76,7 @@ func (b *StreamBouncer) ConfigReader(configReader io.Reader) error {
 
 	// the metrics interval is not used direclty but is passed back to the metrics provider,
 	// and the minimum can be overridden for testing
-	b.MetricsInterval = SetMetricsInterval(b.MetricsInterval, log.NewEntry(log.StandardLogger()))
+	b.MetricsInterval = defaultMetricsInterval
 
 	return nil
 }

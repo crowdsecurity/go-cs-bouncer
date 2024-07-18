@@ -26,7 +26,7 @@ type LiveBouncer struct {
 	APIClient *apiclient.ApiClient
 	UserAgent string
 
-	MetricsInterval        *time.Duration `yaml:"metrics_interval"`
+	MetricsInterval time.Duration
 }
 
 // Config() fills the struct with configuration values from a file. It is not
@@ -55,7 +55,7 @@ func (b *LiveBouncer) ConfigReader(configReader io.Reader) error {
 
 	// the metrics interval is not used direclty but is passed back to the metrics provider,
 	// and the minimum can be overridden for testing
-	b.MetricsInterval = SetMetricsInterval(b.MetricsInterval, log.NewEntry(log.StandardLogger()))
+	b.MetricsInterval = defaultMetricsInterval
 
 	return nil
 }

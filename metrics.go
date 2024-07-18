@@ -17,30 +17,8 @@ import (
 type MetricsUpdater func(*models.RemediationComponentsMetrics)
 
 const (
-	minimumMetricsInterval = 1 * time.Second
-	defaultMetricsInterval = 30 * time.Minute
+	defaultMetricsInterval = 15 * time.Minute
 )
-
-func SetMetricsInterval(interval *time.Duration, logger logrus.FieldLogger) *time.Duration {
-	var ret time.Duration
-
-	switch {
-	case interval == nil:
-		ret = defaultMetricsInterval
-		logger.Debugf("metrics_interval is not set, default to %s", ret)
-	case *interval == time.Duration(0):
-		ret = 0
-		logger.Info("metrics_interval is set to 0, disabling metrics")
-	case *interval < minimumMetricsInterval:
-		ret = minimumMetricsInterval
-		logger.Warnf("metrics_interval is too low (%s), setting it to %s", *interval, ret)
-	default:
-		ret = *interval
-		logger.Debugf("metrics_interval set to %s", ret)
-	}
-
-	return &ret
-}
 
 type MetricsProvider struct {
 	APIClient *apiclient.ApiClient
