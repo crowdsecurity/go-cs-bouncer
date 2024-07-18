@@ -5,7 +5,7 @@ go 1.22
 toolchain go1.22.5
 
 require (
-	github.com/crowdsecurity/crowdsec v1.6.3-0.20240625082021-0bfbd3e2bcd7
+	github.com/crowdsecurity/crowdsec v1.6.3-rc1.0.20240718182703-d1ffcac99087
 	github.com/crowdsecurity/go-cs-lib v0.0.13
 	github.com/prometheus/client_golang v1.18.0
 	github.com/sirupsen/logrus v1.9.3
