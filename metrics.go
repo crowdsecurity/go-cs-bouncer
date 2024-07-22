@@ -14,7 +14,7 @@ import (
 	"github.com/crowdsecurity/crowdsec/pkg/models"
 )
 
-type MetricsUpdater func(*models.RemediationComponentsMetrics)
+type MetricsUpdater func(*models.RemediationComponentsMetrics, time.Duration)
 
 const (
 	defaultMetricsInterval = 15 * time.Minute
@@ -49,10 +49,10 @@ func newStaticMetrics(bouncerType string) staticMetrics {
 	}
 }
 
-func NewMetricsProvider(client *apiclient.ApiClient, bouncerType string, interval time.Duration, updater MetricsUpdater, logger logrus.FieldLogger) (*MetricsProvider, error) {
+func NewMetricsProvider(client *apiclient.ApiClient, bouncerType string, updater MetricsUpdater, logger logrus.FieldLogger) (*MetricsProvider, error) {
 	return &MetricsProvider{
 		APIClient: client,
-		Interval:  interval,
+		Interval:  defaultMetricsInterval,
 		updater:   updater,
 		static:    newStaticMetrics(bouncerType),
 		logger:    logger,
@@ -81,7 +81,7 @@ func (m *MetricsProvider) metricsPayload() *models.AllMetrics {
 	}
 
 	if m.updater != nil {
-		m.updater(item0)
+		m.updater(item0, m.Interval)
 	}
 
 	return &models.AllMetrics{
