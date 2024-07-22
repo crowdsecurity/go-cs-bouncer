@@ -5,7 +5,7 @@ go 1.22
 toolchain go1.22.5
 
 require (
-	github.com/crowdsecurity/crowdsec v1.6.3-rc1.0.20240718182703-d1ffcac99087
+	github.com/crowdsecurity/crowdsec v1.6.3-rc1.0.20240722101522-3fe047fc8e37
 	github.com/crowdsecurity/go-cs-lib v0.0.13
 	github.com/prometheus/client_golang v1.18.0
 	github.com/sirupsen/logrus v1.9.3
@@ -13,12 +13,12 @@ require (
 )
 
 require (
-	github.com/antonmedv/expr v1.15.3 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/blackfireio/osinfo v1.0.5 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/expr-lang/expr v1.16.9 // indirect
 	github.com/fatih/color v1.16.0 // indirect
 	github.com/go-openapi/analysis v0.21.4 // indirect
 	github.com/go-openapi/errors v0.20.4 // indirect
