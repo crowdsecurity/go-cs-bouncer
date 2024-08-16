@@ -15,7 +15,7 @@ func ExampleStreamBouncer() {
 	}
 
 	if err := bouncer.Init(); err != nil {
-		log.Fatalf(err.Error())
+		log.Fatal(err.Error())
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -46,7 +46,7 @@ func ExampleStreamBouncer_Config() {
 	}
 
 	if err := bouncer.Init(); err != nil {
-		log.Fatalf(err.Error())
+		log.Fatal(err.Error())
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())

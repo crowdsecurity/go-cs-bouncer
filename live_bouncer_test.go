@@ -42,7 +42,7 @@ func ExampleLiveBouncer_Config() {
 	}
 
 	if err = bouncer.Init(); err != nil {
-		log.Fatalf(err.Error())
+		log.Fatal(err.Error())
 	}
 
 	ipToQuery := "1.2.3.4"
