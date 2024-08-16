@@ -11,8 +11,8 @@ github.com/blackfireio/osinfo v1.0.5/go.mod h1:Pd987poVNmd5Wsx6PRPw4+w7kLlf9iJxo
 github.com/cespare/xxhash/v2 v2.2.0 h1:DC2CZ1Ep5Y4k3ZQ899DldepgrayRUGE6BBZ/cd9Cj44=
 github.com/cespare/xxhash/v2 v2.2.0/go.mod h1:VGX0DQ3Q6kWi7AoAeZDth3/j3BFtOZR5XLFGgcrjCOs=
 github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=
-github.com/crowdsecurity/crowdsec v1.6.3-rc1.0.20240722101522-3fe047fc8e37 h1:j2kdgTJCGeLniiQMcoRvbFdHfqutqxOnBQkK1SjLmUg=
-github.com/crowdsecurity/crowdsec v1.6.3-rc1.0.20240722101522-3fe047fc8e37/go.mod h1:HsbR9kTrwlk+6KZ08rR8/oXKepjOw4j+NPYjzvXIXL0=
+github.com/crowdsecurity/crowdsec v1.6.3-rc3 h1:Hlb4CIHI7oB6DptjhTjdLZXBiWgm5ufCFdekIEnKh+A=
+github.com/crowdsecurity/crowdsec v1.6.3-rc3/go.mod h1:o1M2A0sNqch8D5RwiXpmiLj5JPznZGwTFalXskXhkPY=
 github.com/crowdsecurity/go-cs-lib v0.0.13 h1:asmtjIEPOibUK8eaYQCIR7XIBU/EX5vyAp1EbKFQJtY=
 github.com/crowdsecurity/go-cs-lib v0.0.13/go.mod h1:ePyQyJBxp1W/1bq4YpVAilnLSz7HkzmtI7TRhX187EU=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
