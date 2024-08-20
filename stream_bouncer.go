@@ -46,10 +46,14 @@ type StreamBouncer struct {
 	APIClient              *apiclient.ApiClient
 	UserAgent              string
 	Opts                   apiclient.DecisionsStreamOpts
+
+	MetricsInterval time.Duration
 }
 
 // Config() fills the struct with configuration values from a file. It is not
 // aware of .yaml.local files so it is recommended to use ConfigReader() instead.
+//
+// Deprecated: use ConfigReader() instead.
 func (b *StreamBouncer) Config(configPath string) error {
 	reader, err := os.Open(configPath)
 	if err != nil {
@@ -69,6 +73,10 @@ func (b *StreamBouncer) ConfigReader(configReader io.Reader) error {
 	if err != nil {
 		return fmt.Errorf("unable to unmarshal config file: %w", err)
 	}
+
+	// the metrics interval is not used direclty but is passed back to the metrics provider,
+	// and the minimum can be overridden for testing
+	b.MetricsInterval = defaultMetricsInterval
 
 	return nil
 }
