@@ -3,8 +3,8 @@ module github.com/crowdsecurity/go-cs-bouncer
 go 1.22
 
 require (
-	github.com/crowdsecurity/crowdsec v1.6.3-rc3
-	github.com/crowdsecurity/go-cs-lib v0.0.13
+	github.com/crowdsecurity/crowdsec v1.6.3
+	github.com/crowdsecurity/go-cs-lib v0.0.15
 	github.com/prometheus/client_golang v1.18.0
 	github.com/sirupsen/logrus v1.9.3
 	gopkg.in/yaml.v2 v2.4.0
@@ -42,7 +42,7 @@ require (
 	github.com/prometheus/procfs v0.12.0 // indirect
 	go.mongodb.org/mongo-driver v1.12.1 // indirect
 	golang.org/x/net v0.24.0 // indirect
-	golang.org/x/sys v0.19.0 // indirect
+	golang.org/x/sys v0.24.0 // indirect
 	golang.org/x/xerrors v0.0.0-20231012003039-104605ab7028 // indirect
 	google.golang.org/protobuf v1.33.0 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1 // indirect
