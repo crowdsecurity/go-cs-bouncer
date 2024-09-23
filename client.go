@@ -78,5 +78,10 @@ func getAPIClient(urlstr string, userAgent string, apiKey string, caPath string,
 		}
 	}
 
+	if apiURL.Scheme == "unix" {
+		// We reset the scheme here because NewDefaultClient expects the url as a path
+		apiURL.Scheme = ""
+	}
+
 	return apiclient.NewDefaultClient(apiURL, "v1", userAgent, client)
 }
