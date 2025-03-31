@@ -20,7 +20,7 @@ func getAPIClient(urlstr string, userAgent string, apiKey string, caPath string,
 	}
 
 	if apiKey != "" && (certPath != "" || keyPath != "") {
-		return nil, fmt.Errorf("cannot use both API key and certificate auth")
+		return nil, errors.New("cannot use both API key and certificate auth")
 	}
 
 	insecureSkipVerify := false
@@ -41,7 +41,7 @@ func getAPIClient(urlstr string, userAgent string, apiKey string, caPath string,
 
 	if apiKey != "" {
 		var transport *apiclient.APIKeyTransport
-		logger.Infof("Using API key auth")
+		logger.Info("Using API key auth")
 		if apiURL.Scheme == "https" {
 			transport = &apiclient.APIKeyTransport{
 				APIKey: apiKey,

@@ -2,6 +2,7 @@ package csbouncer
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -53,7 +54,7 @@ func (b *LiveBouncer) ConfigReader(configReader io.Reader) error {
 		return fmt.Errorf("unable to unmarshal config file: %w", err)
 	}
 
-	// the metrics interval is not used direclty but is passed back to the metrics provider,
+	// the metrics interval is not used directly but is passed back to the metrics provider,
 	// and the minimum can be overridden for testing
 	b.MetricsInterval = defaultMetricsInterval
 
@@ -66,7 +67,7 @@ func (b *LiveBouncer) Init() error {
 	// validate the configuration
 
 	if b.APIUrl == "" {
-		return fmt.Errorf("config does not contain LAPI url")
+		return errors.New("config does not contain LAPI url")
 	}
 
 	if !strings.HasSuffix(b.APIUrl, "/") {
@@ -74,7 +75,7 @@ func (b *LiveBouncer) Init() error {
 	}
 
 	if b.APIKey == "" && b.CertPath == "" && b.KeyPath == "" {
-		return fmt.Errorf("config does not contain LAPI key or certificate")
+		return errors.New("config does not contain LAPI key or certificate")
 	}
 
 	b.APIClient, err = getAPIClient(b.APIUrl, b.UserAgent, b.APIKey, b.CAPath, b.CertPath, b.KeyPath, b.InsecureSkipVerify, log.StandardLogger())
