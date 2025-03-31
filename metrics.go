@@ -129,7 +129,7 @@ func (m *MetricsProvider) Run(ctx context.Context) error {
 				continue
 			}
 
-			m.logger.Debugf("usage metrics sent")
+			m.logger.Debug("usage metrics sent")
 		}
 	}
 }

@@ -2,6 +2,7 @@ package csbouncer
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -74,7 +75,7 @@ func (b *StreamBouncer) ConfigReader(configReader io.Reader) error {
 		return fmt.Errorf("unable to unmarshal config file: %w", err)
 	}
 
-	// the metrics interval is not used direclty but is passed back to the metrics provider,
+	// the metrics interval is not used directly but is passed back to the metrics provider,
 	// and the minimum can be overridden for testing
 	b.MetricsInterval = defaultMetricsInterval
 
@@ -87,7 +88,7 @@ func (b *StreamBouncer) Init() error {
 	// validate the configuration
 
 	if b.APIUrl == "" {
-		return fmt.Errorf("config does not contain LAPI url")
+		return errors.New("config does not contain LAPI url")
 	}
 
 	if !strings.HasSuffix(b.APIUrl, "/") {
@@ -95,7 +96,7 @@ func (b *StreamBouncer) Init() error {
 	}
 
 	if b.APIKey == "" && b.CertPath == "" && b.KeyPath == "" {
-		return fmt.Errorf("config does not contain LAPI key or certificate")
+		return errors.New("config does not contain LAPI key or certificate")
 	}
 
 	//  scopes, origins, etc.
@@ -129,7 +130,7 @@ func (b *StreamBouncer) Init() error {
 	}
 
 	if b.TickerIntervalDuration <= 0 {
-		return fmt.Errorf("lapi update interval must be positive")
+		return errors.New("lapi update interval must be positive")
 	}
 
 	// prepare the client object for the lapi
@@ -148,8 +149,8 @@ func (b *StreamBouncer) Run(ctx context.Context) {
 
 	b.Opts.Startup = true
 
-	getDecisionStream := func() (*models.DecisionsStreamResponse, *apiclient.Response, error) {
-		data, resp, err := b.APIClient.Decisions.GetStream(context.Background(), b.Opts)
+	getDecisionStream := func(ctx context.Context) (*models.DecisionsStreamResponse, *apiclient.Response, error) {
+		data, resp, err := b.APIClient.Decisions.GetStream(ctx, b.Opts)
 		TotalLAPICalls.Inc()
 		if err != nil {
 			TotalLAPIError.Inc()
@@ -159,7 +160,7 @@ func (b *StreamBouncer) Run(ctx context.Context) {
 
 	// Initial connection
 	for {
-		data, resp, err := getDecisionStream()
+		data, resp, err := getDecisionStream(ctx)
 
 		if resp != nil && resp.Response != nil {
 			resp.Response.Body.Close()
@@ -194,7 +195,7 @@ func (b *StreamBouncer) Run(ctx context.Context) {
 		case <-ctx.Done():
 			return
 		case <-ticker.C:
-			data, resp, err := getDecisionStream()
+			data, resp, err := getDecisionStream(ctx)
 			if resp != nil && resp.Response != nil {
 				resp.Response.Body.Close()
 			}
