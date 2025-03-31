@@ -148,8 +148,8 @@ func (b *StreamBouncer) Run(ctx context.Context) {
 
 	b.Opts.Startup = true
 
-	getDecisionStream := func() (*models.DecisionsStreamResponse, *apiclient.Response, error) {
-		data, resp, err := b.APIClient.Decisions.GetStream(context.Background(), b.Opts)
+	getDecisionStream := func(ctx context.Context) (*models.DecisionsStreamResponse, *apiclient.Response, error) {
+		data, resp, err := b.APIClient.Decisions.GetStream(ctx, b.Opts)
 		TotalLAPICalls.Inc()
 		if err != nil {
 			TotalLAPIError.Inc()
@@ -159,7 +159,7 @@ func (b *StreamBouncer) Run(ctx context.Context) {
 
 	// Initial connection
 	for {
-		data, resp, err := getDecisionStream()
+		data, resp, err := getDecisionStream(ctx)
 
 		if resp != nil && resp.Response != nil {
 			resp.Response.Body.Close()
@@ -194,7 +194,7 @@ func (b *StreamBouncer) Run(ctx context.Context) {
 		case <-ctx.Done():
 			return
 		case <-ticker.C:
-			data, resp, err := getDecisionStream()
+			data, resp, err := getDecisionStream(ctx)
 			if resp != nil && resp.Response != nil {
 				resp.Response.Body.Close()
 			}
