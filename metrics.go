@@ -89,6 +89,27 @@ func (m *MetricsProvider) metricsPayload() *models.AllMetrics {
 	}
 }
 
+func (m *MetricsProvider) sendMetrics(ctx context.Context) {
+	ctxTime, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
+
+	met := m.metricsPayload()
+
+	_, resp, err := m.APIClient.UsageMetrics.Add(ctxTime, met)
+	switch {
+	case errors.Is(err, context.DeadlineExceeded):
+		m.logger.Warnf("timeout sending metrics")
+	case resp != nil && resp.Response != nil && resp.Response.StatusCode == http.StatusNotFound:
+		m.logger.Warnf("metrics endpoint not found, older LAPI?")
+	case err != nil:
+		m.logger.Warnf("failed to send metrics: %s", err)
+	case resp.Response.StatusCode != http.StatusCreated:
+		m.logger.Warnf("failed to send metrics: %s", resp.Response.Status)
+	default:
+		m.logger.Debug("usage metrics sent")
+	}
+}
+
 func (m *MetricsProvider) Run(ctx context.Context) error {
 	if m.Interval == 0 {
 		m.logger.Infof("usage metrics disabled")
@@ -106,30 +127,7 @@ func (m *MetricsProvider) Run(ctx context.Context) error {
 		case <-ctx.Done():
 			return errors.New("metric provider halted")
 		case <-ticker.C:
-			met := m.metricsPayload()
-
-			ctxTime, cancel := context.WithTimeout(ctx, 10*time.Second)
-			defer cancel()
-
-			_, resp, err := m.APIClient.UsageMetrics.Add(ctxTime, met)
-			switch {
-			case errors.Is(err, context.DeadlineExceeded):
-				m.logger.Warnf("timeout sending metrics")
-				continue
-			case resp != nil && resp.Response != nil && resp.Response.StatusCode == http.StatusNotFound:
-				m.logger.Warnf("metrics endpoint not found, older LAPI?")
-				continue
-			case err != nil:
-				m.logger.Warnf("failed to send metrics: %s", err)
-				continue
-			}
-
-			if resp.Response.StatusCode != http.StatusCreated {
-				m.logger.Warnf("failed to send metrics: %s", resp.Response.Status)
-				continue
-			}
-
-			m.logger.Debug("usage metrics sent")
+			m.sendMetrics(ctx)
 		}
 	}
 }
