@@ -120,7 +120,7 @@ func (b *StreamBouncer) Init() error {
 	// update_frequency or however it's called in the .yaml of the specific bouncer
 
 	if b.TickerInterval == "" {
-		log.Warningf("lapi update interval is not defined, using default value of 10s")
+		log.Warning("lapi update interval is not defined, using default value of 10s")
 		b.TickerInterval = "10s"
 	}
 
