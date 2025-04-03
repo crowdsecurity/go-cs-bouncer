@@ -41,7 +41,9 @@ func getAPIClient(urlstr string, userAgent string, apiKey string, caPath string,
 
 	if apiKey != "" {
 		var transport *apiclient.APIKeyTransport
+
 		logger.Info("Using API key auth")
+
 		if apiURL.Scheme == "https" {
 			transport = &apiclient.APIKeyTransport{
 				APIKey: apiKey,
@@ -57,6 +59,7 @@ func getAPIClient(urlstr string, userAgent string, apiKey string, caPath string,
 				APIKey: apiKey,
 			}
 		}
+
 		client = transport.Client()
 	}
 
