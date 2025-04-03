@@ -40,7 +40,6 @@ func ExampleStreamBouncer_Config() {
 	bouncer := &csbouncer.StreamBouncer{}
 
 	err := bouncer.Config("./config.yaml")
-
 	if err != nil {
 		log.Fatal(err)
 	}

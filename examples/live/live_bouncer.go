@@ -8,19 +8,17 @@ import (
 )
 
 func main() {
-
-	//You can pass parameters to the bouncer constructor
-	//bouncer := &csbouncer.LiveBouncer{
+	// You can pass parameters to the bouncer constructor
+	// bouncer := &csbouncer.LiveBouncer{
 	//	APIKey: "ebd4db481d51525fd0df924a69193921",
 	//		APIUrl: "http://localhost:8080/",
 	//	}
 
-	//Or you can also use the Config() method with a path to a config file
+	// Or you can also use the Config() method with a path to a config file
 
 	bouncer := &csbouncer.LiveBouncer{}
 
 	err := bouncer.Config("./config.yaml")
-
 	if err != nil {
 		log.Fatal(err)
 	}
