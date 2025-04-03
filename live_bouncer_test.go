@@ -32,11 +32,11 @@ func ExampleLiveBouncer() {
 		fmt.Printf("decisions: IP: %s | Scenario: %s | Duration: %s | Scope : %v\n", *decision.Value, *decision.Scenario, *decision.Duration, *decision.Scope)
 	}
 }
+
 func ExampleLiveBouncer_Config() {
 	bouncer := &csbouncer.LiveBouncer{}
 
 	err := bouncer.Config("./config.yaml")
-
 	if err != nil {
 		log.Fatal(err)
 	}

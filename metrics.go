@@ -8,10 +8,9 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"github.com/crowdsecurity/go-cs-lib/version"
-
 	"github.com/crowdsecurity/crowdsec/pkg/apiclient"
 	"github.com/crowdsecurity/crowdsec/pkg/models"
+	"github.com/crowdsecurity/go-cs-lib/version"
 )
 
 type MetricsUpdater func(*models.RemediationComponentsMetrics, time.Duration)

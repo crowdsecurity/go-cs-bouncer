@@ -12,7 +12,6 @@ func boolPtr(x bool) *bool {
 }
 
 func main() {
-
 	bouncer := &csbouncer.LiveBouncer{
 		APIUrl:             "https://localhost:8081/",
 		CertPath:           "/home/seb/cfssl/bouncer.pem",

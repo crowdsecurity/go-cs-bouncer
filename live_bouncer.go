@@ -82,6 +82,7 @@ func (b *LiveBouncer) Init() error {
 	if err != nil {
 		return fmt.Errorf("api client init: %w", err)
 	}
+
 	return nil
 }
 
@@ -95,6 +96,7 @@ func (b *LiveBouncer) Get(value string) (*models.GetDecisionsResponse, error) {
 		if resp != nil && resp.Response != nil {
 			resp.Response.Body.Close()
 		}
+
 		return &models.GetDecisionsResponse{}, err
 	}
 

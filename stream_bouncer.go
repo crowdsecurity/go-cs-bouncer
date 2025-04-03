@@ -120,7 +120,8 @@ func (b *StreamBouncer) Init() error {
 	// update_frequency or however it's called in the .yaml of the specific bouncer
 
 	if b.TickerInterval == "" {
-		log.Warningf("lapi update interval is not defined, using default value of 10s")
+		log.Warning("lapi update interval is not defined, using default value of 10s")
+
 		b.TickerInterval = "10s"
 	}
 
@@ -141,6 +142,7 @@ func (b *StreamBouncer) Init() error {
 	if err != nil {
 		return fmt.Errorf("api client init: %w", err)
 	}
+
 	return nil
 }
 
@@ -155,6 +157,7 @@ func (b *StreamBouncer) Run(ctx context.Context) {
 		if err != nil {
 			TotalLAPIError.Inc()
 		}
+
 		return data, resp, err
 	}
 
@@ -182,14 +185,17 @@ func (b *StreamBouncer) Run(ctx context.Context) {
 			// close the stream
 			// this may cause the bouncer to exit
 			close(b.Stream)
+
 			return
 		}
 
 		b.Stream <- data
+
 		break
 	}
 
 	b.Opts.Startup = false
+
 	for {
 		select {
 		case <-ctx.Done():
@@ -199,6 +205,7 @@ func (b *StreamBouncer) Run(ctx context.Context) {
 			if resp != nil && resp.Response != nil {
 				resp.Response.Body.Close()
 			}
+
 			if err != nil {
 				log.Error(err)
 				continue

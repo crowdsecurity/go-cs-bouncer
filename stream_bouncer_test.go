@@ -30,6 +30,7 @@ func ExampleStreamBouncer() {
 		for _, decision := range streamDecision.Deleted {
 			fmt.Printf("expired decisions: IP: %s | Scenario: %s | Duration: %s | Scope : %v\n", *decision.Value, *decision.Scenario, *decision.Duration, *decision.Scope)
 		}
+
 		for _, decision := range streamDecision.New {
 			fmt.Printf("new decisions: IP: %s | Scenario: %s | Duration: %s | Scope : %v\n", *decision.Value, *decision.Scenario, *decision.Duration, *decision.Scope)
 		}
@@ -40,7 +41,6 @@ func ExampleStreamBouncer_Config() {
 	bouncer := &csbouncer.StreamBouncer{}
 
 	err := bouncer.Config("./config.yaml")
-
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -61,6 +61,7 @@ func ExampleStreamBouncer_Config() {
 		for _, decision := range streamDecision.Deleted {
 			fmt.Printf("expired decisions: IP: %s | Scenario: %s | Duration: %s | Scope : %v\n", *decision.Value, *decision.Scenario, *decision.Duration, *decision.Scope)
 		}
+
 		for _, decision := range streamDecision.New {
 			fmt.Printf("new decisions: IP: %s | Scenario: %s | Duration: %s | Scope : %v\n", *decision.Value, *decision.Scenario, *decision.Duration, *decision.Scope)
 		}
