@@ -124,7 +124,7 @@ func (m *MetricsProvider) Run(ctx context.Context) error {
 	for {
 		select {
 		case <-ctx.Done():
-			return errors.New("metric provider halted")
+			return ctx.Err()
 		case <-ticker.C:
 			m.sendMetrics(ctx)
 		}

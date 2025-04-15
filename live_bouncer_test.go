@@ -1,6 +1,7 @@
 package csbouncer_test
 
 import (
+	"context"
 	"fmt"
 	"log"
 
@@ -19,7 +20,7 @@ func ExampleLiveBouncer() {
 
 	ipToQuery := "1.2.3.4"
 
-	response, err := bouncer.Get(ipToQuery)
+	response, err := bouncer.Get(context.Background(), ipToQuery)
 	if err != nil {
 		log.Fatalf("unable to get decision for ip '%s' : '%s'", ipToQuery, err)
 	}
@@ -47,7 +48,7 @@ func ExampleLiveBouncer_Config() {
 
 	ipToQuery := "1.2.3.4"
 
-	response, err := bouncer.Get(ipToQuery)
+	response, err := bouncer.Get(context.Background(), ipToQuery)
 	if err != nil {
 		log.Fatalf("unable to get decision for ip '%s' : '%s'", ipToQuery, err)
 	}

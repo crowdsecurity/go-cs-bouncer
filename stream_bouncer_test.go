@@ -22,8 +22,9 @@ func ExampleStreamBouncer() {
 	defer cancel()
 
 	go func() {
-		bouncer.Run(ctx)
-		cancel()
+		if err := bouncer.Run(ctx); err != nil {
+			log.Fatal(err.Error())
+		}
 	}()
 
 	for streamDecision := range bouncer.Stream {
@@ -53,8 +54,9 @@ func ExampleStreamBouncer_Config() {
 	defer cancel()
 
 	go func() {
-		bouncer.Run(ctx)
-		cancel()
+		if err := bouncer.Run(ctx); err != nil {
+			log.Fatal(err.Error())
+		}
 	}()
 
 	for streamDecision := range bouncer.Stream {
