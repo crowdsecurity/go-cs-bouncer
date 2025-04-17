@@ -15,9 +15,7 @@ import (
 
 type MetricsUpdater func(*models.RemediationComponentsMetrics, time.Duration)
 
-const (
-	defaultMetricsInterval = 15 * time.Minute
-)
+const defaultMetricsInterval = 15 * time.Minute
 
 type MetricsProvider struct {
 	APIClient *apiclient.ApiClient
@@ -35,7 +33,7 @@ type staticMetrics struct {
 	bouncerType  string
 }
 
-// newStaticMetrics should be called once over the lifetime of the program (more if we support hot-reload)
+// newStaticMetrics should be called once over the lifetime of the program (more if we support hot-reload).
 func newStaticMetrics(bouncerType string) staticMetrics {
 	osName, osVersion := version.DetectOS()
 

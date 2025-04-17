@@ -13,13 +13,10 @@ linters:
 
     - godot                 # Check if comments end in a period
     - gosec                 # (gas): Inspects source code for security problems
-    - inamedparam           # reports interfaces with unnamed method parameters
     - wrapcheck             # Checks that errors returned from external packages are wrapped
     - mnd                   # An analyzer to detect magic numbers.
     - nlreturn              # nlreturn checks for a new line before return and branch statements to increase code clarity
-    - whitespace            # Whitespace is a linter that checks for unnecessary newlines at the start and end of functions, if, for, etc.
     - wsl                   # add or remove empty lines
-    - godox                 # Tool for detection of FIXME, TODO and other comment keywords
     - err113                # Go linter to check the errors handling expressions
     - paralleltest          # Detects missing usage of t.Parallel() method in your Go test
     - testpackage           # linter that makes you use a separate _test package
@@ -75,19 +72,11 @@ linters:
           arguments:
             # lower this after refactoring
             - 25
-        - name: comment-spacings
-          disabled: true
         - name: cyclomatic
           arguments:
             # lower this after refactoring
             - 16
-        - name: empty-block
-          disabled: true
-        - name: empty-lines
-          disabled: true
         - name: flag-parameter
-          disabled: true
-        - name: increment-decrement
           disabled: true
         - name: line-length-limit
           arguments:
@@ -96,14 +85,6 @@ linters:
         - name: max-public-structs
           disabled: true
         - name: package-comments
-          disabled: true
-        - name: var-naming
-          disabled: true
-        - name: unhandled-error
-          arguments:
-            - fmt.Print
-            - fmt.Printf
-            - fmt.Println
           disabled: true
         - name: useless-break
           disabled: true
