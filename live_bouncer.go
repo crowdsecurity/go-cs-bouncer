@@ -86,18 +86,18 @@ func (b *LiveBouncer) Init() error {
 	return nil
 }
 
-func (b *LiveBouncer) Get(value string) (*models.GetDecisionsResponse, error) {
+func (b *LiveBouncer) Get(ctx context.Context, value string) (*models.GetDecisionsResponse, error) {
 	filter := apiclient.DecisionsListOpts{
 		IPEquals: &value,
 	}
 
-	decision, resp, err := b.APIClient.Decisions.List(context.Background(), filter)
+	decision, resp, err := b.APIClient.Decisions.List(ctx, filter)
 	if err != nil {
 		if resp != nil && resp.Response != nil {
 			resp.Response.Body.Close()
 		}
 
-		return &models.GetDecisionsResponse{}, err
+		return nil, err
 	}
 
 	if resp != nil && resp.Response != nil {
