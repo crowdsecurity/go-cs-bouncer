@@ -185,8 +185,11 @@ func (b *StreamBouncer) Run(ctx context.Context) error {
 			close(b.Stream)
 			return err
 		}
-
-		b.Stream <- data
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case b.Stream <- data
+		}
 
 		break
 	}
