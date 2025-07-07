@@ -188,9 +188,9 @@ func (b *StreamBouncer) Run(ctx context.Context) error {
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
-		case b.Stream <- data
+		case b.Stream <- data:
+			log.Infof("connected to LAPI, received initial decisions stream")
 		}
-
 		break
 	}
 
