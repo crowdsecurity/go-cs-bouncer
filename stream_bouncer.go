@@ -146,24 +146,24 @@ func (b *StreamBouncer) Init() error {
 	return nil
 }
 
+func (b *StreamBouncer) getDecisionStream(ctx context.Context) (*models.DecisionsStreamResponse, *apiclient.Response, error) {
+	data, resp, err := b.APIClient.Decisions.GetStream(ctx, b.Opts)
+	TotalLAPICalls.Inc()
+	if err != nil {
+		TotalLAPIError.Inc()
+	}
+
+	return data, resp, err
+}
+
 func (b *StreamBouncer) Run(ctx context.Context) error {
 	ticker := time.NewTicker(b.TickerIntervalDuration)
 
 	b.Opts.Startup = true
 
-	getDecisionStream := func(ctx context.Context) (*models.DecisionsStreamResponse, *apiclient.Response, error) {
-		data, resp, err := b.APIClient.Decisions.GetStream(ctx, b.Opts)
-		TotalLAPICalls.Inc()
-		if err != nil {
-			TotalLAPIError.Inc()
-		}
-
-		return data, resp, err
-	}
-
 	// Initial connection
 	for {
-		data, resp, err := getDecisionStream(ctx)
+		data, resp, err := b.getDecisionStream(ctx)
 
 		if resp != nil && resp.Response != nil {
 			resp.Response.Body.Close()
@@ -200,7 +200,7 @@ func (b *StreamBouncer) Run(ctx context.Context) error {
 		case <-ctx.Done():
 			return ctx.Err()
 		case <-ticker.C:
-			data, resp, err := getDecisionStream(ctx)
+			data, resp, err := b.getDecisionStream(ctx)
 			if resp != nil && resp.Response != nil {
 				resp.Response.Body.Close()
 			}
