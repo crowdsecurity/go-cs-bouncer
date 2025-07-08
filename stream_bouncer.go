@@ -146,31 +146,51 @@ func (b *StreamBouncer) Init() error {
 	return nil
 }
 
-func (b *StreamBouncer) Run(ctx context.Context) error {
-	ticker := time.NewTicker(b.TickerIntervalDuration)
-
-	b.Opts.Startup = true
-
-	getDecisionStream := func(ctx context.Context) (*models.DecisionsStreamResponse, *apiclient.Response, error) {
-		data, resp, err := b.APIClient.Decisions.GetStream(ctx, b.Opts)
-		TotalLAPICalls.Inc()
-		if err != nil {
-			TotalLAPIError.Inc()
-		}
-
-		return data, resp, err
+func (b *StreamBouncer) getDecisionStream(ctx context.Context) (*models.DecisionsStreamResponse, *apiclient.Response, error) {
+	data, resp, err := b.APIClient.Decisions.GetStream(ctx, b.Opts)
+	TotalLAPICalls.Inc()
+	if err != nil {
+		TotalLAPIError.Inc()
 	}
 
-	// Initial connection
-	for {
-		data, resp, err := getDecisionStream(ctx)
+	return data, resp, err
+}
 
+func (b *StreamBouncer) Run(ctx context.Context) error {
+	// the first connection is different, because
+	//
+	// - we need to communicate it to the LAPI (Opts.Startup)
+	//
+	// and if the LAPI is not responding on the first connect:
+	//
+	// - depending on the configuration (RetryInitialConnect), according to the runner (systemd or other daemonizer)
+	//   we want the attempt to fail immediateley and quit instead of retrying. If there is a retry,
+	//   it's not an exponential backoff but linear, because this situation (API not available) is more likely
+	//   during boot, updates, configuration scripts, tests, etc. where short delays are more appropriate.
+
+	startup := true
+
+	ticker := time.NewTicker(b.TickerIntervalDuration)
+	defer ticker.Stop()
+
+	// no delay for the first connection
+	delay := time.After(0)
+
+	for {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-delay:
+		}
+
+		b.Opts.Startup = startup
+		data, resp, err := b.getDecisionStream(ctx)
 		if resp != nil && resp.Response != nil {
 			resp.Response.Body.Close()
 		}
 
 		if err != nil {
-			if b.RetryInitialConnect {
+			if startup && b.RetryInitialConnect {
 				log.Errorf("failed to connect to LAPI, retrying in 10s: %s", err)
 				select {
 				case <-ctx.Done():
@@ -180,36 +200,24 @@ func (b *StreamBouncer) Run(ctx context.Context) error {
 				}
 			}
 
-			// close the stream
-			// this may cause the bouncer to exit
-			close(b.Stream)
-			return err
+			if startup {
+				// close the stream
+				// this may cause the bouncer to exit
+				close(b.Stream)
+				return err
+			}
+
+			log.Error(err)
+			continue
 		}
+
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
 		case b.Stream <- data:
 		}
-		break
-	}
 
-	b.Opts.Startup = false
-
-	for {
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		case <-ticker.C:
-			data, resp, err := getDecisionStream(ctx)
-			if resp != nil && resp.Response != nil {
-				resp.Response.Body.Close()
-			}
-
-			if err != nil {
-				log.Error(err)
-				continue
-			}
-			b.Stream <- data
-		}
+		startup = false
+		delay = ticker.C
 	}
 }
