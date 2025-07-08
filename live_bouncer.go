@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 
 	"github.com/crowdsecurity/crowdsec/pkg/apiclient"
@@ -78,7 +78,7 @@ func (b *LiveBouncer) Init() error {
 		return errors.New("config does not contain LAPI key or certificate")
 	}
 
-	b.APIClient, err = getAPIClient(b.APIUrl, b.UserAgent, b.APIKey, b.CAPath, b.CertPath, b.KeyPath, b.InsecureSkipVerify, log.StandardLogger())
+	b.APIClient, err = getAPIClient(b.APIUrl, b.UserAgent, b.APIKey, b.CAPath, b.CertPath, b.KeyPath, b.InsecureSkipVerify, logrus.StandardLogger())
 	if err != nil {
 		return fmt.Errorf("api client init: %w", err)
 	}
