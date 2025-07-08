@@ -148,7 +148,9 @@ func (b *StreamBouncer) Init() error {
 
 func (b *StreamBouncer) getDecisionStream(ctx context.Context) (*models.DecisionsStreamResponse, *apiclient.Response, error) {
 	data, resp, err := b.APIClient.Decisions.GetStream(ctx, b.Opts)
+
 	TotalLAPICalls.Inc()
+
 	if err != nil {
 		TotalLAPIError.Inc()
 	}
@@ -167,7 +169,6 @@ func (b *StreamBouncer) Run(ctx context.Context) error {
 	//   we want the attempt to fail immediateley and quit instead of retrying. If there is a retry,
 	//   it's not an exponential backoff but linear, because this situation (API not available) is more likely
 	//   during boot, updates, configuration scripts, tests, etc. where short delays are more appropriate.
-
 	startup := true
 
 	ticker := time.NewTicker(b.TickerIntervalDuration)
@@ -184,6 +185,7 @@ func (b *StreamBouncer) Run(ctx context.Context) error {
 		}
 
 		b.Opts.Startup = startup
+
 		data, resp, err := b.getDecisionStream(ctx)
 		if resp != nil && resp.Response != nil {
 			resp.Response.Body.Close()
@@ -192,6 +194,7 @@ func (b *StreamBouncer) Run(ctx context.Context) error {
 		if err != nil {
 			if startup && b.RetryInitialConnect {
 				log.Errorf("failed to connect to LAPI, retrying in 10s: %s", err)
+
 				select {
 				case <-ctx.Done():
 					return ctx.Err()
@@ -208,6 +211,7 @@ func (b *StreamBouncer) Run(ctx context.Context) error {
 			}
 
 			log.Error(err)
+
 			continue
 		}
 
