@@ -51,7 +51,7 @@ type StreamBouncer struct {
 	MetricsInterval time.Duration
 }
 
-// Config() fills the struct with configuration values from a file. It is not
+// Config fills the struct with configuration values from a file. It is not
 // aware of .yaml.local files so it is recommended to use ConfigReader() instead.
 //
 // Deprecated: use ConfigReader() instead.

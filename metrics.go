@@ -27,6 +27,7 @@ type MetricsProvider struct {
 
 type staticMetrics struct {
 	osName       string
+	osFamily     string
 	osVersion    string
 	startupTS    int64
 	featureFlags []string
@@ -35,10 +36,11 @@ type staticMetrics struct {
 
 // newStaticMetrics should be called once over the lifetime of the program (more if we support hot-reload).
 func newStaticMetrics(bouncerType string) staticMetrics {
-	osName, osVersion := version.DetectOS()
+	osName, osFamily, osVersion := version.DetectOS()
 
 	return staticMetrics{
 		osName:       osName,
+		osFamily:     osFamily,
 		osVersion:    osVersion,
 		startupTS:    time.Now().Unix(),
 		featureFlags: []string{},
@@ -59,6 +61,7 @@ func NewMetricsProvider(client *apiclient.ApiClient, bouncerType string, updater
 func (m *MetricsProvider) metricsPayload() *models.AllMetrics {
 	os := &models.OSversion{
 		Name:    &m.static.osName,
+		Family:  m.static.osFamily,
 		Version: &m.static.osVersion,
 	}
 

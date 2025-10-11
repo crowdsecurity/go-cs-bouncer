@@ -1,4 +1,4 @@
-// Package go-cs-bouncer implements a wrapper for the CrowdSec bouncer API.
+// Package csbouncer implements a wrapper for the CrowdSec bouncer API.
 //
 // It can be used to create 2 types of bouncer:
 //
