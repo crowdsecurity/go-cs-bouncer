@@ -194,13 +194,8 @@ func (b *StreamBouncer) Run(ctx context.Context) error {
 		if err != nil {
 			if startup && b.RetryInitialConnect {
 				log.Errorf("failed to connect to LAPI, retrying in 10s: %s", err)
-
-				select {
-				case <-ctx.Done():
-					return ctx.Err()
-				case <-time.After(10 * time.Second):
-					continue
-				}
+				delay = time.After(10 * time.Second)
+				continue
 			}
 
 			if startup {
