@@ -10,13 +10,13 @@ linters:
     - gocognit  # revive
     - gocyclo   # revive
     - lll       # revive
+    - wsl       # wsl_v5
 
     - godot                 # Check if comments end in a period
     - gosec                 # (gas): Inspects source code for security problems
     - wrapcheck             # Checks that errors returned from external packages are wrapped
     - mnd                   # An analyzer to detect magic numbers.
     - nlreturn              # nlreturn checks for a new line before return and branch statements to increase code clarity
-    - wsl                   # add or remove empty lines
     - err113                # Go linter to check the errors handling expressions
     - paralleltest          # Detects missing usage of t.Parallel() method in your Go test
     - testpackage           # linter that makes you use a separate _test package
@@ -75,7 +75,7 @@ linters:
         - name: cognitive-complexity
           arguments:
             # lower this after refactoring
-            - 25
+            - 17
         - name: cyclomatic
           arguments:
             # lower this after refactoring
@@ -86,8 +86,6 @@ linters:
           arguments:
             # lower this after refactoring
             - 190
-        - name: max-public-structs
-          disabled: true
         - name: package-comments
           disabled: true
         - name: useless-break
