@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 
 	csbouncer "github.com/crowdsecurity/go-cs-bouncer"
 )
@@ -19,7 +20,12 @@ func main() {
 
 	bouncer := &csbouncer.StreamBouncer{}
 
-	err := bouncer.Config("./config.yaml")
+	reader, err := os.Open("./config.yaml")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = bouncer.ConfigReader(reader)
 	if err != nil {
 		log.Fatal(err)
 	}
