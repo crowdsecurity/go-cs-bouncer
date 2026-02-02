@@ -1,8 +1,10 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
+	"os"
 
 	csbouncer "github.com/crowdsecurity/go-cs-bouncer"
 )
@@ -18,17 +20,24 @@ func main() {
 
 	bouncer := &csbouncer.LiveBouncer{}
 
-	err := bouncer.Config("./config.yaml")
+	reader, err := os.Open("./config.yaml")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = bouncer.ConfigReader(reader)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	if err := bouncer.Init(); err != nil {
-		log.Fatalf(err.Error())
+		log.Fatal(err.Error())
 	}
 
+	ctx := context.Background()
+
 	ipToQuery := "1.2.3.4"
-	response, err := bouncer.Get(ipToQuery)
+	response, err := bouncer.Get(ctx, ipToQuery)
 	if err != nil {
 		log.Fatalf("unable to get decision for ip '%s' : '%s'", ipToQuery, err)
 	}
