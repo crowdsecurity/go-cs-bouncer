@@ -66,18 +66,21 @@ func getAPIClient(urlstr string, userAgent string, apiKey string, caPath string,
 	if certPath != "" && keyPath != "" {
 		logger.Infof("Using cert auth with cert '%s' and key '%s'", certPath, keyPath)
 
-		certificate, err := tls.LoadX509KeyPair(certPath, keyPath)
+		reloader, err := newCertReloader(certPath, keyPath, logger)
 		if err != nil {
-			return nil, fmt.Errorf("unable to load certificate '%s' and key '%s': %w", certPath, keyPath, err)
+			return nil, err
 		}
 
 		client = &http.Client{}
-		client.Transport = &http.Transport{
-			TLSClientConfig: &tls.Config{
-				RootCAs:            caCertPool,
-				Certificates:       []tls.Certificate{certificate},
-				InsecureSkipVerify: insecureSkipVerify,
+		client.Transport = &certReloadingTransport{
+			base: &http.Transport{
+				TLSClientConfig: &tls.Config{
+					RootCAs:              caCertPool,
+					GetClientCertificate: reloader.GetClientCertificate,
+					InsecureSkipVerify:   insecureSkipVerify,
+				},
 			},
+			reloader: reloader,
 		}
 	}
 
