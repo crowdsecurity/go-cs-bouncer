@@ -48,6 +48,7 @@ func getAPIClient(urlstr string, userAgent string, apiKey string, caPath string,
 			transport = &apiclient.APIKeyTransport{
 				APIKey: apiKey,
 				Transport: &http.Transport{
+					Proxy: http.ProxyFromEnvironment,
 					TLSClientConfig: &tls.Config{
 						RootCAs:            caCertPool,
 						InsecureSkipVerify: insecureSkipVerify,
@@ -73,6 +74,7 @@ func getAPIClient(urlstr string, userAgent string, apiKey string, caPath string,
 
 		client = &http.Client{}
 		client.Transport = &http.Transport{
+			Proxy: http.ProxyFromEnvironment,
 			TLSClientConfig: &tls.Config{
 				RootCAs:            caCertPool,
 				Certificates:       []tls.Certificate{certificate},
